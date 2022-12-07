@@ -1,4 +1,5 @@
-﻿@page "/CreateReview"
+﻿@using TinyMCE.Blazor
+@page "/CreateReview"
 
 <MudPaper Class="d-flex flex-wrap gap-4 ml-4" MaxWidth="528px" Elevation="0">
     <MudPaper>
@@ -7,17 +8,19 @@
     <MudPaper>
         <MudTextField T="string" Label="Title" Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true"></MudTextField>
     </MudPaper>
-    <MudSelect @bind-Value="Group" Label="Default Focus" Dense="true" Variant="Variant.Outlined">
-        <MudSelectItem Value="Group">Game</MudSelectItem>
-        <MudSelectItem Value="Group">Movie</MudSelectItem>
-        <MudSelectItem Value="Group">Album</MudSelectItem>
-        <MudSelectItem Value="Group">Book</MudSelectItem>
+    <MudSelect @bind-Value="group" Label="Default Focus" Dense="true" Variant="Variant.Outlined">
+        <MudSelectItem Value="group">Game</MudSelectItem>
+        <MudSelectItem Value="group">Movie</MudSelectItem>
+        <MudSelectItem Value="group">Album</MudSelectItem>
+        <MudSelectItem Value="group">Book</MudSelectItem>
     </MudSelect>
     <MudAutocomplete T="string" Label="Tags" @bind-Value="tag" SearchFunc="@Search1" Variant="Variant.Outlined" />
+    <Editor @bind-Value="text"/>
 </MudPaper>
 @code {
-    private string? Group;
+    private string? group;
     private string? tag;
+    private string? text;
     private string[] tags = { "Bloody", "Hell" };
     private async Task<IEnumerable<string>> Search1(string value)
     {
