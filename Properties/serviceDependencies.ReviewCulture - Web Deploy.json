@@ -5,6 +5,10 @@
       "type": "mssql.onprem",
       "connectionId": "ConnectionStrings:DefaultConnection",
       "dynamicId": null
+    },
+    "secrets1": {
+      "ignored": "true",
+      "type": "secrets.keyVault"
     }
   }
 }

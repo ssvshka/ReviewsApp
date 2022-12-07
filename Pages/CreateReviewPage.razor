@@ -1,35 +1,61 @@
 ﻿@using TinyMCE.Blazor
+@using Microsoft.EntityFrameworkCore
 @page "/CreateReview"
+@inject IDbContextFactory<ApplicationDbContext> ContextFactory
 
 <MudPaper Class="d-flex flex-wrap gap-4 ml-4" MaxWidth="528px" Elevation="0">
     <MudPaper>
-        <MudTextField T="string" Label="Title" Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true"></MudTextField>
+        <MudTextField T="string" Label="Review Title" @bind-Value="review.Title" Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true"></MudTextField>
     </MudPaper>
     <MudPaper>
-        <MudTextField T="string" Label="Title" Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true"></MudTextField>
+        <MudTextField T="string" Label="Work Title" @bind-Value="review.Subject.Title" Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true"></MudTextField>
     </MudPaper>
-    <MudSelect @bind-Value="group" Label="Default Focus" Dense="true" Variant="Variant.Outlined">
+    <MudSelect @bind-Value="review.Subject.Group" Label="Default Focus" Dense="true" Variant="Variant.Outlined">
         <MudSelectItem Value="group">Game</MudSelectItem>
         <MudSelectItem Value="group">Movie</MudSelectItem>
         <MudSelectItem Value="group">Album</MudSelectItem>
         <MudSelectItem Value="group">Book</MudSelectItem>
     </MudSelect>
-    <MudAutocomplete T="string" Label="Tags" @bind-Value="tag" SearchFunc="@Search1" Variant="Variant.Outlined" />
-    <Editor @bind-Value="text"/>
+    <MudAutocomplete T="string" Label="Tags" SearchFunc="@Search1" Variant="Variant.Outlined" />
+    <Editor @bind-Value="review.Text"/>
 </MudPaper>
 @code {
     private string? group;
-    private string? tag;
-    private string? text;
-    private string[] tags = { "Bloody", "Hell" };
+    private List<string> tags = new();
+
+    private Review review = new Review();
+
+    protected override void OnInitialized()
+    {
+        GetTags();
+    }
+
+    private async Task CreateReview()
+    {
+        using (var ctx = ContextFactory.CreateDbContext())
+        {
+            ctx.Reviews.Add(review);
+            await ctx.SaveChangesAsync();
+        }
+    }
+
     private async Task<IEnumerable<string>> Search1(string value)
     {
-        // In real life use an asynchronous function for fetching data from an api.
-        await Task.Delay(5);
-
-        // if text is null or empty, show complete list
         if (string.IsNullOrEmpty(value))
+        {    
             return tags;
-        return tags.Where(x => x.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+        }
+        return await tags.Where(x => x.Contains(value, StringComparison.InvariantCultureIgnoreCase)).AsQueryable().ToListAsync();
+    }
+
+    private void GetTags()
+    {
+        using (var ctx = ContextFactory.CreateDbContext())
+        {
+            foreach (var t in ctx.Tags)
+            {
+                tags.Add(t.TagId);
+            }
+        }
     }
 }

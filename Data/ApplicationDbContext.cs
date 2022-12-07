@@ -18,10 +18,9 @@ namespace CourseProject.Data
             builder.Entity<Review>()
                 .Property(e => e.ImageUrl)
                 .IsUnicode(false);
-            
-            base.OnModelCreating(builder);  
         }
 
         public DbSet<Review> Reviews { get; set; }
+        public DbSet<Tag> Tags { get; set; }
     }
 }
