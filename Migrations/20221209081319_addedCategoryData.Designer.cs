@@ -4,6 +4,7 @@ using CourseProject.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CourseProject.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20221209081319_addedCategoryData")]
+    partial class addedCategoryData
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -108,6 +111,9 @@ namespace CourseProject.Migrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
 
+                    b.Property<int>("ReviewSubjectId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Text")
                         .IsRequired()
                         .HasMaxLength(4096)
@@ -118,34 +124,39 @@ namespace CourseProject.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("WorkId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("AuthorId");
 
-                    b.HasIndex("WorkId");
+                    b.HasIndex("ReviewSubjectId");
 
                     b.ToTable("Reviews");
                 });
 
-            modelBuilder.Entity("CourseProject.Models.ReviewTag", b =>
+            modelBuilder.Entity("CourseProject.Models.ReviewSubject", b =>
                 {
-                    b.Property<int>("ReviewId")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<int>("TagId")
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CategoryId")
                         .HasColumnType("int");
 
-                    b.HasKey("ReviewId", "TagId");
+                    b.Property<decimal>("Rating")
+                        .HasColumnType("decimal(5, 2)");
 
-                    b.HasIndex("TagId");
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
-                    b.ToTable("ReviewTag");
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.ToTable("ReviewSubjects");
                 });
 
             modelBuilder.Entity("CourseProject.Models.Tag", b =>
@@ -164,28 +175,6 @@ namespace CourseProject.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Tags");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Title = "Great Plot"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Title = "Upbeat"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Title = "Fantastic"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Title = "Short"
-                        });
                 });
 
             modelBuilder.Entity("CourseProject.Models.User", b =>
@@ -226,6 +215,9 @@ namespace CourseProject.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<decimal>("Rating")
+                        .HasColumnType("decimal(5, 2)");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
@@ -240,43 +232,19 @@ namespace CourseProject.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("CourseProject.Models.Work", b =>
+            modelBuilder.Entity("ReviewTag", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<int>("ReviewsId")
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("AuthorRating")
-                        .HasColumnType("decimal(5, 2)");
-
-                    b.Property<int>("CategoryId")
+                    b.Property<int>("TagsId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                    b.HasKey("ReviewsId", "TagsId");
 
-                    b.Property<decimal>("UserRating")
-                        .HasColumnType("decimal(5, 2)");
+                    b.HasIndex("TagsId");
 
-                    b.HasKey("Id");
-
-                    b.HasIndex("CategoryId");
-
-                    b.ToTable("Works");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            AuthorRating = 0m,
-                            CategoryId = 1,
-                            Title = "Cars",
-                            UserRating = 0m
-                        });
+                    b.ToTable("ReviewTag");
                 });
 
             modelBuilder.Entity("CourseProject.Models.Comment", b =>
@@ -302,40 +270,21 @@ namespace CourseProject.Migrations
                         .WithMany("Reviews")
                         .HasForeignKey("AuthorId");
 
-                    b.HasOne("CourseProject.Models.Work", "Work")
+                    b.HasOne("CourseProject.Models.ReviewSubject", "Subject")
                         .WithMany("Reviews")
-                        .HasForeignKey("WorkId")
+                        .HasForeignKey("ReviewSubjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Author");
 
-                    b.Navigation("Work");
+                    b.Navigation("Subject");
                 });
 
-            modelBuilder.Entity("CourseProject.Models.ReviewTag", b =>
-                {
-                    b.HasOne("CourseProject.Models.Review", "Review")
-                        .WithMany("TagsLink")
-                        .HasForeignKey("ReviewId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("CourseProject.Models.Tag", "Tag")
-                        .WithMany("ReviewsLink")
-                        .HasForeignKey("TagId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Review");
-
-                    b.Navigation("Tag");
-                });
-
-            modelBuilder.Entity("CourseProject.Models.Work", b =>
+            modelBuilder.Entity("CourseProject.Models.ReviewSubject", b =>
                 {
                     b.HasOne("CourseProject.Models.Category", "Category")
-                        .WithMany("Works")
+                        .WithMany("ReviewSubjects")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -343,32 +292,40 @@ namespace CourseProject.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("ReviewTag", b =>
+                {
+                    b.HasOne("CourseProject.Models.Review", null)
+                        .WithMany()
+                        .HasForeignKey("ReviewsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CourseProject.Models.Tag", null)
+                        .WithMany()
+                        .HasForeignKey("TagsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("CourseProject.Models.Category", b =>
                 {
-                    b.Navigation("Works");
+                    b.Navigation("ReviewSubjects");
                 });
 
             modelBuilder.Entity("CourseProject.Models.Review", b =>
                 {
                     b.Navigation("Comments");
-
-                    b.Navigation("TagsLink");
                 });
 
-            modelBuilder.Entity("CourseProject.Models.Tag", b =>
+            modelBuilder.Entity("CourseProject.Models.ReviewSubject", b =>
                 {
-                    b.Navigation("ReviewsLink");
+                    b.Navigation("Reviews");
                 });
 
             modelBuilder.Entity("CourseProject.Models.User", b =>
                 {
                     b.Navigation("Comments");
 
-                    b.Navigation("Reviews");
-                });
-
-            modelBuilder.Entity("CourseProject.Models.Work", b =>
-                {
                     b.Navigation("Reviews");
                 });
 #pragma warning restore 612, 618

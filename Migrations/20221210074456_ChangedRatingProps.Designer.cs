@@ -4,6 +4,7 @@ using CourseProject.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CourseProject.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20221210074456_ChangedRatingProps")]
+    partial class ChangedRatingProps
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -131,21 +134,6 @@ namespace CourseProject.Migrations
                     b.HasIndex("WorkId");
 
                     b.ToTable("Reviews");
-                });
-
-            modelBuilder.Entity("CourseProject.Models.ReviewTag", b =>
-                {
-                    b.Property<int>("ReviewId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TagId")
-                        .HasColumnType("int");
-
-                    b.HasKey("ReviewId", "TagId");
-
-                    b.HasIndex("TagId");
-
-                    b.ToTable("ReviewTag");
                 });
 
             modelBuilder.Entity("CourseProject.Models.Tag", b =>
@@ -267,16 +255,21 @@ namespace CourseProject.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("Works");
+                });
 
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            AuthorRating = 0m,
-                            CategoryId = 1,
-                            Title = "Cars",
-                            UserRating = 0m
-                        });
+            modelBuilder.Entity("ReviewTag", b =>
+                {
+                    b.Property<int>("ReviewsId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TagsId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ReviewsId", "TagsId");
+
+                    b.HasIndex("TagsId");
+
+                    b.ToTable("ReviewTag");
                 });
 
             modelBuilder.Entity("CourseProject.Models.Comment", b =>
@@ -313,25 +306,6 @@ namespace CourseProject.Migrations
                     b.Navigation("Work");
                 });
 
-            modelBuilder.Entity("CourseProject.Models.ReviewTag", b =>
-                {
-                    b.HasOne("CourseProject.Models.Review", "Review")
-                        .WithMany("TagsLink")
-                        .HasForeignKey("ReviewId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("CourseProject.Models.Tag", "Tag")
-                        .WithMany("ReviewsLink")
-                        .HasForeignKey("TagId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Review");
-
-                    b.Navigation("Tag");
-                });
-
             modelBuilder.Entity("CourseProject.Models.Work", b =>
                 {
                     b.HasOne("CourseProject.Models.Category", "Category")
@@ -343,6 +317,21 @@ namespace CourseProject.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("ReviewTag", b =>
+                {
+                    b.HasOne("CourseProject.Models.Review", null)
+                        .WithMany()
+                        .HasForeignKey("ReviewsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CourseProject.Models.Tag", null)
+                        .WithMany()
+                        .HasForeignKey("TagsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("CourseProject.Models.Category", b =>
                 {
                     b.Navigation("Works");
@@ -351,13 +340,6 @@ namespace CourseProject.Migrations
             modelBuilder.Entity("CourseProject.Models.Review", b =>
                 {
                     b.Navigation("Comments");
-
-                    b.Navigation("TagsLink");
-                });
-
-            modelBuilder.Entity("CourseProject.Models.Tag", b =>
-                {
-                    b.Navigation("ReviewsLink");
                 });
 
             modelBuilder.Entity("CourseProject.Models.User", b =>

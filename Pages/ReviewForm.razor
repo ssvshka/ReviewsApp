@@ -1,0 +1,111 @@
+﻿@page "/ReviewForm"
+@using CourseProject.Services;
+@using Microsoft.EntityFrameworkCore;
+@using TinyMCE.Blazor
+@inject ReviewService reviewService
+@inject NavigationManager navigationManager
+
+<MudGrid>
+    <MudItem xs="12" sm="7">
+        <MudPaper Class="pa-4">
+            <MudForm>
+                <MudSelect T="Category" @bind-Value="category" Label="Category" Dense="true" Variant="Variant.Outlined">
+                    @foreach (var item in allCategories)
+                    {
+                        <MudSelectItem Value="@item">@item</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudTextField T="string" Label="Review Title" @bind-Value="review.Title" Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true"></MudTextField>
+                <MudAutocomplete T="Work" Label="Work" @bind-Value="work" SearchFunc="@SearchWorks" Variant="Variant.Outlined" CoerceValue="true" />
+                <MudAutocomplete T="Tag" Label="Tags" ValueChanged="AddTag" SearchFunc="@SearchTags" Variant="Variant.Outlined" CoerceValue="true" />
+                <Editor @bind-Value="review.Text" />
+                <MudRating @bind-Value="rating" MaxValue="10" />
+                <MudItem xs="12" md="12">
+                    <MudText Class="mb-n3" Typo="Typo.body2">
+                        Selected tags: 
+                        @foreach (var t in reviewTags)
+                        {
+                            <MudChip>@(t?.ToString())</MudChip>
+                        }
+                    </MudText>
+                </MudItem>
+                <br /> <br /> <br />
+                <MudButton OnClick="SaveReviewToDb" Variant="Variant.Filled">Publish</MudButton>
+            </MudForm>   
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+@code {
+    private List<Category> allCategories = new();
+    private List<Work> allWorks = new();
+    private List<Tag> allTags = new();
+    private Category category = default!;
+    private Work work = default!;
+    private List<Tag> reviewTags = new();
+    private decimal rating;
+
+    private Review review = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        allTags = await reviewService.GetTags();
+        allCategories = await reviewService.GetCategories();
+        allWorks = await reviewService.GetWorks();
+    }
+
+    private void SaveReviewToDb()
+    {
+        SetReviewData();
+        reviewService.AddReview(review);
+        navigationManager.NavigateTo("/YourReviews");
+    }
+
+    private void SetReviewData()
+    {
+        review.WorkId = work.Id;
+        work.CategoryId = category.Id;
+        work.AuthorRating = rating;
+        SetReviewTags();
+    }
+
+    private void SetReviewTags()
+    {
+        review.TagsLink = new List<ReviewTag>();
+        foreach (var t in reviewTags)
+        {
+            review.TagsLink.Add(new ReviewTag
+            {
+                ReviewId = review.Id,
+                TagId = t.Id
+            });
+        }
+    }
+
+    private void AddTag(Tag value)
+    {
+        if (!allTags.Contains(value))
+            allTags.Add(value);
+
+        if (!reviewTags.Contains(value))
+            reviewTags.Add(value);
+    }
+
+    private async Task<IEnumerable<Tag>> SearchTags(string value)
+    {
+        await Task.Delay(5);
+
+        if (string.IsNullOrEmpty(value))
+            return allTags;
+        return allTags.Where(x => x.Title.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+    }
+    
+    private async Task<IEnumerable<Work>> SearchWorks(string value)
+    {
+        await Task.Delay(5);
+
+        if (string.IsNullOrEmpty(value))
+            return allWorks;
+        return allWorks.Where(x => x.Title.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+    }
+}

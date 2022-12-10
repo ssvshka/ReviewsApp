@@ -2,13 +2,13 @@
 
 namespace CourseProject.Models
 {
-    public class Tag
+    public class Category
     {
         public int Id { get; set; }
         [Required]
-        [StringLength(128)]
+        [MaxLength(128)]
         public string Title { get; set; } = default!;
-        public ICollection<ReviewTag> ReviewsLink { get; set; } = default!;
+        public virtual ICollection<Work>? Works { get; set; }
 
         public override string ToString() => Title;
     }

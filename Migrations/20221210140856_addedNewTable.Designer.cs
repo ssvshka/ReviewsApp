@@ -4,6 +4,7 @@ using CourseProject.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CourseProject.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20221210140856_addedNewTable")]
+    partial class addedNewTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -38,28 +41,6 @@ namespace CourseProject.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Categories");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Title = "Album"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Title = "Book"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Title = "Movie"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Title = "Game"
-                        });
                 });
 
             modelBuilder.Entity("CourseProject.Models.Comment", b =>
@@ -105,8 +86,7 @@ namespace CourseProject.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ImageUrl")
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Text")
                         .IsRequired()
@@ -164,28 +144,6 @@ namespace CourseProject.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Tags");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Title = "Great Plot"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Title = "Upbeat"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Title = "Fantastic"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Title = "Short"
-                        });
                 });
 
             modelBuilder.Entity("CourseProject.Models.User", b =>
@@ -267,16 +225,6 @@ namespace CourseProject.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("Works");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            AuthorRating = 0m,
-                            CategoryId = 1,
-                            Title = "Cars",
-                            UserRating = 0m
-                        });
                 });
 
             modelBuilder.Entity("CourseProject.Models.Comment", b =>

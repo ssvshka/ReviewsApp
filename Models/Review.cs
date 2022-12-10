@@ -1,23 +1,25 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CourseProject.Models
 {
     public class Review
     {
-        public int ReviewId { get; set; }
+        public int Id { get; set; }
         [Required]
-        [StringLength(128)]
+        [MaxLength(128)]
         public string Title { get; set; } = default!;
         [Required]
-        [StringLength(4096)]
+        [MaxLength(4096)]
         public string Text { get; set; } = default!;
-        public string? ImageUrl { get; set; }
-        public virtual ReviewSubject Subject { get; set; } = default!;
+        public string? ImageUrl { get; set; }  
         public virtual User Author { get; set; } = default!;
-        public virtual ICollection<Tag> Tags { get; set; } = default!;
-
-        public int ReviewSubjectId { get; set; }
         public int UserId { get; set; }
+        public virtual Work Work { get; set; } = default!;
+        public int WorkId { get; set; }
+        public ICollection<ReviewTag> TagsLink { get; set; } = default!;
+        public ICollection<Comment> Comments { get; set; } = default!;
     }
 }
