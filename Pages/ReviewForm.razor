@@ -15,11 +15,12 @@
                         <MudSelectItem Value="@item">@item</MudSelectItem>
                     }
                 </MudSelect>
-                <MudTextField T="string" Label="Review Title" @bind-Value="review.Title" Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true"></MudTextField>
-                <MudAutocomplete T="Work" Label="Work" @bind-Value="work" SearchFunc="@SearchWorks" Variant="Variant.Outlined" CoerceValue="true" />
-                <MudAutocomplete T="Tag" Label="Tags" ValueChanged="AddTag" SearchFunc="@SearchTags" Variant="Variant.Outlined" CoerceValue="true" />
-                <Editor @bind-Value="review.Text" />
-                <MudRating @bind-Value="rating" MaxValue="10" />
+                <MudTextField T="string" Label="Review Title" @bind-Value="review.Title" 
+                                 Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true"></MudTextField>
+                <MudAutocomplete T="Work" Label="Work" @bind-Value="work" SearchFunc="@SearchWorks" 
+                                 Variant="Variant.Outlined" CoerceValue=true />
+                <MudAutocomplete T="Tag" Label="Tags" ValueChanged="AddTag" SearchFunc="@SearchTags" 
+                                 Variant="Variant.Outlined" CoerceValue="true" />
                 <MudItem xs="12" md="12">
                     <MudText Class="mb-n3" Typo="Typo.body2">
                         Selected tags: 
@@ -30,6 +31,8 @@
                     </MudText>
                 </MudItem>
                 <br /> <br /> <br />
+                <Editor @bind-Value="review.Text" />
+                <MudRating @bind-Value="rating" MaxValue="10" />
                 <MudButton OnClick="SaveReviewToDb" Variant="Variant.Filled">Publish</MudButton>
             </MudForm>   
         </MudPaper>
@@ -99,7 +102,7 @@
             return allTags;
         return allTags.Where(x => x.Title.Contains(value, StringComparison.InvariantCultureIgnoreCase));
     }
-    
+
     private async Task<IEnumerable<Work>> SearchWorks(string value)
     {
         await Task.Delay(5);

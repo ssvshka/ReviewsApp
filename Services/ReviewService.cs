@@ -15,11 +15,9 @@ namespace CourseProject.Services
 
         public void AddReview(Review review)
         {
-            using (var ctx = _dbContextFactory.CreateDbContext())
-            {
-                ctx.Reviews.Add(review);
-                ctx.SaveChanges();
-            }
+            using var ctx = _dbContextFactory.CreateDbContext();
+            ctx.Reviews.Add(review);
+            ctx.SaveChanges();
         }
 
         public async Task<List<Category>> GetCategories()
@@ -60,8 +58,7 @@ namespace CourseProject.Services
         public async Task AddWork(Work work)
         {
             using var ctx = _dbContextFactory.CreateDbContext();
-            if (!ctx.Works.Contains(work))
-                await ctx.Works.AddAsync(work);
+            await ctx.Works.AddAsync(work);
             await ctx.SaveChangesAsync();
         }
     }

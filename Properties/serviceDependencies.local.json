@@ -1,8 +1,10 @@
 {
   "dependencies": {
-    "mssql1": {
-      "type": "mssql.local",
-      "connectionId": "ConnectionStrings:DefaultConnection"
+    "mssql2": {
+      "secretStore": "LocalSecretsFile",
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Sql/servers/authemptiondbserver/databases/ReviewCulture_db",
+      "type": "mssql.azure",
+      "connectionId": "ReviewCS"
     }
   }
 }
