@@ -206,6 +206,9 @@ PublishScripts/
 *.nuget.props
 *.nuget.targets
 
+#appsettings
+appsettings.json
+
 # Microsoft Azure Build Output
 csx/
 *.build.csdef
@@ -396,3 +399,5 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+appsettings.json
+*.json

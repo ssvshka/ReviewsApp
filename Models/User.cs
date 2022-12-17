@@ -8,6 +8,5 @@ namespace CourseProject.Models
     {
         public virtual ICollection<Review>? Reviews { get; set; }
         public virtual ICollection<Comment>? Comments { get; set; }
-
     }
 }

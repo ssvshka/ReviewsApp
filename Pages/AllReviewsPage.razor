@@ -1,0 +1,19 @@
+﻿@page "/AllReviews"
+@using CourseProject.Services
+@inject ViewReviewService viewService
+
+<ReviewsList />
+
+@code {
+    protected async override void OnInitialized()
+    {
+        await viewService.GetReviewsAsync();
+        viewService.ListChanged += this.OnListChanged;
+    }
+
+    private void OnListChanged(object? sender, EventArgs e)
+        => this.InvokeAsync(this.StateHasChanged);
+
+    public void Dispose()
+        => viewService.ListChanged -= OnListChanged;
+}

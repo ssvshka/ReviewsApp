@@ -1,30 +1,40 @@
 using CourseProject.Areas.Identity;
-using CourseProject.Data;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
 using Azure.Identity;
-using CourseProject.Services;
+using CloudinaryDotNet;
+using dotenv.net;
+using Microsoft.AspNetCore.DataProtection;
+using CourseProject.Data;
 using CourseProject.Models;
+using CourseProject.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+var config = builder.Configuration;
 
-var cs = builder.Configuration.GetConnectionString("DefaultConnection");
+var cs = config.GetConnectionString("DefaultConnection");
+var apiSecret = config["AccountSettings:ApiSecret"];
 
 builder.Services.AddDbContextFactory<ApplicationDbContext>(options => options.UseSqlServer(cs));
-builder.Services.AddTransient<ReviewService>();
+builder.Services.AddScoped<ReviewService>();
+builder.Services.AddScoped<ViewReviewService>();
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = true)
+builder.Services.AddDefaultIdentity<User>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<User>>();
 builder.Services.AddMudServices();
-builder.Services.AddAuthentication().AddGoogle(googleOptions =>
+builder.Services.AddAuthentication().AddMicrosoftAccount(microsoftOptions =>
 {
-    googleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"];
-    googleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+    microsoftOptions.ClientId = config["Authentication:Microsoft:ClientId"];
+    microsoftOptions.ClientSecret = config["Authentication:Microsoft:ClientSecret"];
+}).AddGoogle(googleOptions =>
+{
+    googleOptions.ClientId = config["Authentication:Google:ClientId"];
+    googleOptions.ClientSecret = config["Authentication:Google:ClientSecret"];
 });
 
 var app = builder.Build();

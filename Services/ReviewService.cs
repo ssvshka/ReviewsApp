@@ -13,11 +13,17 @@ namespace CourseProject.Services
             _dbContextFactory = dbContextFactory;
         }
 
-        public void AddReview(Review review)
+        public async Task<List<Review>> GetReviewsAsync()
+        {
+            using var ctx = _dbContextFactory.CreateDbContext();
+            return await ctx.Reviews.ToListAsync();
+        }
+
+        public async Task AddReview(Review review)
         {
             using var ctx = _dbContextFactory.CreateDbContext();
             ctx.Reviews.Add(review);
-            ctx.SaveChanges();
+            await ctx.SaveChangesAsync();
         }
 
         public async Task<List<Category>> GetCategories()
@@ -38,18 +44,12 @@ namespace CourseProject.Services
             return await ctx.Works.ToListAsync();
         }
 
-        public async Task<List<Review>> GetReviews()
-        {
-            using var ctx = _dbContextFactory.CreateDbContext();
-            return await ctx.Reviews.ToListAsync();
-        }
-
         public async Task AddTags(List<Tag> tags)
         {
             using var ctx = _dbContextFactory.CreateDbContext();
             foreach (var t in tags)
             {
-                if(!ctx.Tags.Contains(t))
+                if (!ctx.Tags.Contains(t))
                     await ctx.Tags.AddAsync(t);
             }
             await ctx.SaveChangesAsync();
@@ -60,6 +60,13 @@ namespace CourseProject.Services
             using var ctx = _dbContextFactory.CreateDbContext();
             await ctx.Works.AddAsync(work);
             await ctx.SaveChangesAsync();
+        }
+
+        public async Task DeleteReview(Review review)
+        {
+            using var ctx = _dbContextFactory.CreateDbContext();
+            ctx.Reviews.Remove(review);
+            await ctx.SaveChangesAsync();   
         }
     }
 }

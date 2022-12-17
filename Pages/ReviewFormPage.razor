@@ -1,4 +1,4 @@
-﻿@page "/ReviewFormComp"
+﻿@page "/ReviewForm"
 @using CourseProject.Services;
 @using Microsoft.EntityFrameworkCore;
 @using TinyMCE.Blazor
@@ -15,15 +15,15 @@
                         <MudSelectItem Value="@item">@item</MudSelectItem>
                     }
                 </MudSelect>
-                <MudTextField T="string" Label="Review Title" @bind-Value="review.Title"
-                              Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true"></MudTextField>
-                <MudAutocomplete T="Work" Label="Work" @bind-Value="work" SearchFunc="@SearchWorks"
+                <MudTextField T="string" Label="Review Title" @bind-Value="review.Title" 
+                                 Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true"></MudTextField>
+                <MudAutocomplete T="Work" Label="Work" @bind-Value="work" SearchFunc="@SearchWorks" 
                                  Variant="Variant.Outlined" CoerceValue=true />
-                <MudAutocomplete T="Tag" Label="Tags" ValueChanged="AddTag" SearchFunc="@SearchTags"
+                <MudAutocomplete T="Tag" Label="Tags" ValueChanged="AddTag" SearchFunc="@SearchTags" 
                                  Variant="Variant.Outlined" CoerceValue="true" />
                 <MudItem xs="12" md="12">
                     <MudText Class="mb-n3" Typo="Typo.body2">
-                        Selected tags:
+                        Selected tags: 
                         @foreach (var t in reviewTags)
                         {
                             <MudChip>@(t?.ToString())</MudChip>
@@ -36,7 +36,7 @@
                               Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true"></MudTextField>
                 <MudRating @bind-Value="rating" MaxValue="10" />
                 <MudButton OnClick="PublishReviewAndRedirectToHome" Variant="Variant.Filled">Publish</MudButton>
-            </MudForm>
+            </MudForm>   
         </MudPaper>
     </MudItem>
 </MudGrid>
@@ -81,10 +81,10 @@
         foreach (var t in reviewTags)
         {
             review.TagsLink.Add(new ReviewTag
-                {
-                    ReviewId = review.Id,
-                    TagId = t.Id
-                });
+            {
+                ReviewId = review.Id,
+                TagId = t.Id
+            });
         }
     }
 

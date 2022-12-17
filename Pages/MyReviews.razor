@@ -1,0 +1,23 @@
+﻿@page "/MyReviews"
+@using CourseProject.Services
+@inject NavigationManager navigationManager
+@inject ReviewService reviewService
+
+
+<MudButton OnClick="RedirectToReviewForm" Variant="Variant.Filled">Write review</MudButton>
+<ReviewsList Reviews=reviews />
+
+
+@code {
+    private List<Review> reviews = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        reviews = await reviewService.GetReviewsAsync();
+    }
+
+    private void RedirectToReviewForm()
+    {
+        navigationManager.NavigateTo("/ReviewForm");
+    }
+}

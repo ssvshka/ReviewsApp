@@ -14,7 +14,8 @@ namespace CourseProject.Models
         [Required]
         [MaxLength(4096)]
         public string Text { get; set; } = default!;
-        public string? ImageUrl { get; set; }  
+        public string? ImageUrl { get; set; }
+        public DateTime PostedOn { get; set; } = default;
         public virtual User Author { get; set; } = default!;
         public int UserId { get; set; }
         public virtual Work Work { get; set; } = default!;
