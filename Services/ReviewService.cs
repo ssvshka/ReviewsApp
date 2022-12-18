@@ -26,22 +26,32 @@ namespace CourseProject.Services
             await ctx.SaveChangesAsync();
         }
 
-        public async Task<List<Category>> GetCategories()
+        public async Task DeleteReview(Review review)
         {
             using var ctx = _dbContextFactory.CreateDbContext();
-            return await ctx.Categories.ToListAsync();
+            ctx.Reviews.Remove(review);
+            await ctx.SaveChangesAsync();   
         }
 
-        public async Task<List<Tag>> GetTags()
+        public async Task<Review> GetReviewByIdAsync(int? id)
         {
             using var ctx = _dbContextFactory.CreateDbContext();
-            return await ctx.Tags.ToListAsync();
+            return await ctx.Reviews.SingleAsync(r => r.Id == id);
         }
 
         public async Task<List<Work>> GetWorks()
         {
             using var ctx = _dbContextFactory.CreateDbContext();
             return await ctx.Works.ToListAsync();
+        }
+
+
+
+        public async Task AddWork(Work work)
+        {
+            using var ctx = _dbContextFactory.CreateDbContext();
+            await ctx.Works.AddAsync(work);
+            await ctx.SaveChangesAsync();
         }
 
         public async Task AddTags(List<Tag> tags)
@@ -55,18 +65,16 @@ namespace CourseProject.Services
             await ctx.SaveChangesAsync();
         }
 
-        public async Task AddWork(Work work)
+        public async Task<List<Tag>> GetTags()
         {
             using var ctx = _dbContextFactory.CreateDbContext();
-            await ctx.Works.AddAsync(work);
-            await ctx.SaveChangesAsync();
+            return await ctx.Tags.ToListAsync();
         }
 
-        public async Task DeleteReview(Review review)
+        public async Task<List<Category>> GetCategories()
         {
             using var ctx = _dbContextFactory.CreateDbContext();
-            ctx.Reviews.Remove(review);
-            await ctx.SaveChangesAsync();   
+            return await ctx.Categories.ToListAsync();
         }
     }
 }

@@ -19,7 +19,8 @@ var apiSecret = config["AccountSettings:ApiSecret"];
 
 builder.Services.AddDbContextFactory<ApplicationDbContext>(options => options.UseSqlServer(cs));
 builder.Services.AddScoped<ReviewService>();
-builder.Services.AddScoped<ViewReviewService>();
+builder.Services.AddScoped<ViewService>();
+builder.Services.AddScoped<UserService>();
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddDefaultIdentity<User>()
     .AddEntityFrameworkStores<ApplicationDbContext>();

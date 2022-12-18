@@ -5,41 +5,43 @@
 @inject ReviewService reviewService
 @inject NavigationManager navigationManager
 
-<MudGrid>
-    <MudItem xs="12" sm="7">
-        <MudPaper Class="pa-4">
-            <MudForm>
-                <MudSelect T="Category" @bind-Value="category" Label="Category" Dense="true" Variant="Variant.Outlined">
-                    @foreach (var item in allCategories)
-                    {
-                        <MudSelectItem Value="@item">@item</MudSelectItem>
-                    }
-                </MudSelect>
-                <MudTextField T="string" Label="Review Title" @bind-Value="review.Title" 
-                                 Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true"></MudTextField>
-                <MudAutocomplete T="Work" Label="Work" @bind-Value="work" SearchFunc="@SearchWorks" 
-                                 Variant="Variant.Outlined" CoerceValue=true />
-                <MudAutocomplete T="Tag" Label="Tags" ValueChanged="AddTag" SearchFunc="@SearchTags" 
-                                 Variant="Variant.Outlined" CoerceValue="true" />
-                <MudItem xs="12" md="12">
-                    <MudText Class="mb-n3" Typo="Typo.body2">
-                        Selected tags: 
-                        @foreach (var t in reviewTags)
+<AuthorizeView @Context="">
+    <MudGrid>
+        <MudItem xs="12" sm="7">
+            <MudPaper Class="pa-4">
+                <MudForm>
+                    <MudSelect T="Category" @bind-Value="category" Label="Category" Dense="true" Variant="Variant.Outlined">
+                        @foreach (var item in allCategories)
                         {
-                            <MudChip>@(t?.ToString())</MudChip>
+                            <MudSelectItem Value="@item">@item</MudSelectItem>
                         }
-                    </MudText>
-                </MudItem>
-                <br /> <br /> <br />
-                <Editor @bind-Value="review.Text" />
-                <MudTextField T="string" Label="Image Link" @bind-Value="review.ImageUrl"
-                              Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true"></MudTextField>
-                <MudRating @bind-Value="rating" MaxValue="10" />
-                <MudButton OnClick="PublishReviewAndRedirectToHome" Variant="Variant.Filled">Publish</MudButton>
-            </MudForm>   
-        </MudPaper>
-    </MudItem>
-</MudGrid>
+                    </MudSelect>
+                    <MudTextField T="string" Label="Review Title" @bind-Value="review.Title" 
+                                     Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true"></MudTextField>
+                    <MudAutocomplete T="Work" Label="Work" @bind-Value="work" SearchFunc="@SearchWorks" 
+                                     Variant="Variant.Outlined" CoerceValue=true />
+                    <MudAutocomplete T="Tag" Label="Tags" ValueChanged="AddTag" SearchFunc="@SearchTags" 
+                                     Variant="Variant.Outlined" CoerceValue="true" />
+                    <MudItem xs="12" md="12">
+                        <MudText Class="mb-n3" Typo="Typo.body2">
+                            Selected tags: 
+                            @foreach (var t in reviewTags)
+                            {
+                                <MudChip>@(t?.ToString())</MudChip>
+                            }
+                        </MudText>
+                    </MudItem>
+                    <br /> <br /> <br />
+                    <Editor @bind-Value="review.Text" />
+                    <MudTextField T="string" Label="Image Link" @bind-Value="review.ImageUrl"
+                                  Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true"></MudTextField>
+                    <MudRating @bind-Value="rating" MaxValue="10" />
+                    <MudButton OnClick="PublishReviewAndRedirectToHome" Variant="Variant.Filled">Publish</MudButton>
+                </MudForm>   
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</AuthorizeView>
 
 @code {
     private List<Category> allCategories = new();

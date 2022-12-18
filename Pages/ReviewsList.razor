@@ -1,6 +1,6 @@
 ﻿@using CourseProject.Services
+@inject ViewService viewService
 @inject NavigationManager navigationManager
-@inject ViewReviewService viewService
 
 @if (viewService.Reviews is not null)
 {
@@ -15,7 +15,7 @@
                 <MudText Typo="Typo.caption">on @r.PostedOn</MudText>
             </MudCardContent>
             <MudCardActions>
-                <MudIconButton Icon="@Icons.Material.Filled.Edit" aria-label="edit"></MudIconButton>
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" aria-label="edit" OnClick="() => NavigateToEditForm(r.Id)"></MudIconButton>
                 <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete" OnClick="() => DeleteReview(r)"></MudIconButton>
             </MudCardActions>
         </MudCard>
@@ -32,6 +32,9 @@
 
     private async Task DeleteReview(Review review)
         => await viewService.DeleteReviewAsync(review);
+
+    private void NavigateToEditForm(int reviewId)
+        => navigationManager.NavigateTo($"/Edit/{reviewId}");
 
     public void Dispose()
         => viewService.ListChanged -= OnListChanged;

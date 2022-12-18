@@ -1,0 +1,7 @@
+﻿@page "/Edit/{ReviewId:int}"
+<EditComponent ReviewId="@ReviewId" />
+
+@code {
+    [Parameter]
+    public int? ReviewId { get; set; }
+}

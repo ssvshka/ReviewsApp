@@ -1,5 +1,4 @@
-﻿@page "/ReviewFormComp"
-@using CourseProject.Services;
+﻿@using CourseProject.Services;
 @using Microsoft.EntityFrameworkCore;
 @using TinyMCE.Blazor
 @inject ReviewService reviewService
@@ -19,7 +18,7 @@
                               Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true"></MudTextField>
                 <MudAutocomplete T="Work" Label="Work" @bind-Value="work" SearchFunc="@SearchWorks"
                                  Variant="Variant.Outlined" CoerceValue=true />
-                <MudAutocomplete T="Tag" Label="Tags" ValueChanged="AddTag" SearchFunc="@SearchTags"
+                <MudAutocomplete T="Tag" Label="reviewTags" ValueChanged="AddTag" SearchFunc="@SearchTags"
                                  Variant="Variant.Outlined" CoerceValue="true" />
                 <MudItem xs="12" md="12">
                     <MudText Class="mb-n3" Typo="Typo.body2">
@@ -45,18 +44,22 @@
     private List<Category> allCategories = new();
     private List<Work> allWorks = new();
     private List<Tag> allTags = new();
-    private Category category = default!;
-    private Work work = default!;
+    private Category category = new();
+    private Work work = new();
     private List<Tag> reviewTags = new();
     private decimal rating;
 
     private Review review = new();
 
-    protected override async Task OnInitializedAsync()
+    [Parameter]
+    public int? ReviewId { get; set; }
+
+    protected async override void OnInitialized()
     {
         allTags = await reviewService.GetTags();
         allCategories = await reviewService.GetCategories();
         allWorks = await reviewService.GetWorks();
+        review = await reviewService.GetReviewByIdAsync(ReviewId);
     }
 
     private async Task PublishReviewAndRedirectToHome()

@@ -6,7 +6,7 @@
         </form>
     </Authorized>
     <NotAuthorized>
-        <a href="Identity/Account/Register">Register</a>
-        <a href="Identity/Account/Login">Log in</a>
+        <MudNavLink Href="/Login">Log in</MudNavLink>
+        <MudNavLink Href="Identity/Account/Register" Match="NavLinkMatch.Prefix">Register</MudNavLink>
     </NotAuthorized>
 </AuthorizeView>

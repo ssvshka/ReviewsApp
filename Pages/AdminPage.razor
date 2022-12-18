@@ -1,0 +1,33 @@
+﻿@page "/Admin"
+@using CourseProject.Services
+@inject ViewService viewService
+
+<MudTable Items="@viewService.Users">
+    <HeaderContent>
+        <MudTh>Id</MudTh>
+        <MudTh>Name</MudTh>
+        <MudTh>Review</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Id">@context.Id</MudTd>
+        <MudTd DataLabel="Name">@context.UserName</MudTd>
+        @if (@context.Reviews is not null)
+        {
+            <MudTd DataLabel="Name">@context.Reviews.First().Title</MudTd>
+        }
+    </RowTemplate>
+</MudTable>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await viewService.GetUsersAsync();
+        viewService.ListChanged += OnListChanged;
+    }
+
+    private void OnListChanged(object? sender, EventArgs e)
+    => this.InvokeAsync(this.StateHasChanged);
+
+    public void Dispose()
+    => viewService.ListChanged -= OnListChanged;
+}
