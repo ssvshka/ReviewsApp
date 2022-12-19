@@ -16,10 +16,12 @@ namespace CourseProject.Models
         public string Text { get; set; } = default!;
         public string? ImageUrl { get; set; }
         public DateTime PostedOn { get; set; } = default;
-        public virtual User Author { get; set; } = default!;
-        public int UserId { get; set; }
-        public virtual Work Work { get; set; } = default!;
+        [ForeignKey("User")]
+        [MaxLength(450)]
+        public string UserId { get; set; } = default!;
+        public User User { get; set; } = default!;
         public int WorkId { get; set; }
+        public Work Work { get; set; } = default!;
         public ICollection<ReviewTag> TagsLink { get; set; } = default!;
         public ICollection<Comment> Comments { get; set; } = default!;
     }

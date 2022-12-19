@@ -9,8 +9,8 @@ namespace CourseProject.Models
         [MaxLength(300)]
         public string Text { get; set; } = default!;
         public DateTime LeftOn { get; set; } = default;
-        public virtual User User { get; set; } = default!;
-        public virtual Review? Review { get; set; } = default!;
+        public User User { get; set; } = default!;
+        public Review? Review { get; set; } = default!;
         public int ReviewId { get; set; }
     }
 }

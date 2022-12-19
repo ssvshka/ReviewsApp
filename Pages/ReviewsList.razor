@@ -11,7 +11,7 @@
             <MudCardContent>
                 <MudText Typo="Typo.h5">@r.Title</MudText>
                 <MudText Typo="Typo.body2">@r.Text</MudText>
-                <MudText Typo="Typo.caption">Posted by @r.Author</MudText>
+                <MudText Typo="Typo.caption">Posted by @r.User</MudText>
                 <MudText Typo="Typo.caption">on @r.PostedOn</MudText>
             </MudCardContent>
             <MudCardActions>
@@ -22,6 +22,9 @@
     }
 }
 @code {
+    [Parameter]
+    public List<Review> Reviews { get; set; } = new();
+
     protected override void OnInitialized()
     {
         viewService.ListChanged += OnListChanged;

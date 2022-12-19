@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CourseProject.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20221214124858_addeduserIdentity")]
-    partial class addeduserIdentity
+    [Migration("20221219115737_initialMigration")]
+    partial class initialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -104,12 +104,12 @@ namespace CourseProject.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("AuthorId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<string>("ImageUrl")
                         .IsUnicode(false)
                         .HasColumnType("varchar(max)");
+
+                    b.Property<DateTime>("PostedOn")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Text")
                         .IsRequired()
@@ -121,15 +121,17 @@ namespace CourseProject.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("WorkId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AuthorId");
+                    b.HasIndex("UserId");
 
                     b.HasIndex("WorkId");
 
@@ -466,9 +468,11 @@ namespace CourseProject.Migrations
 
             modelBuilder.Entity("CourseProject.Models.Review", b =>
                 {
-                    b.HasOne("CourseProject.Models.User", "Author")
+                    b.HasOne("CourseProject.Models.User", "User")
                         .WithMany("Reviews")
-                        .HasForeignKey("AuthorId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("CourseProject.Models.Work", "Work")
                         .WithMany("Reviews")
@@ -476,7 +480,7 @@ namespace CourseProject.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Author");
+                    b.Navigation("User");
 
                     b.Navigation("Work");
                 });

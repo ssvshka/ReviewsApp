@@ -19,6 +19,13 @@ namespace CourseProject.Services
             return await ctx.Reviews.ToListAsync();
         }
 
+        public async Task<List<Review>> GetCurrentUserReviewsAsync(string userId)
+        {
+            using var ctx = _dbContextFactory.CreateDbContext();
+            return await ctx.Reviews
+                            .Where(u => u.UserId == userId)
+                            .ToListAsync();
+        }
         public async Task AddReview(Review review)
         {
             using var ctx = _dbContextFactory.CreateDbContext();

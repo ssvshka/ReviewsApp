@@ -9,6 +9,7 @@ namespace CourseProject.Services
         public UserService _userService;
 
         public List<Review>? Reviews { get; private set; }
+        public List<Review>? CurrentUserReviews { get; private set; }
         public List<User>? Users { get; private set; }
 
         public ViewService(ReviewService reviewService, UserService userService)
@@ -23,9 +24,15 @@ namespace CourseProject.Services
             NotifyListChanged(Reviews, EventArgs.Empty);
         }
 
+        public async Task GetUserReviewsAsync()
+        {
+            CurrentUserReviews = await _reviewService.GetCurrentUserReviewsAsync(await _userService.GetCurrentUserId());
+            NotifyListChanged(CurrentUserReviews, EventArgs.Empty);
+        }
+
         public async Task GetUsersAsync()
         {
-            Users = await _userService.GetUsersAsync();
+            Users = await _userService.GetAllUsersAsync();
             NotifyListChanged(Users, EventArgs.Empty);
         }
 
@@ -33,6 +40,7 @@ namespace CourseProject.Services
         {
             await _reviewService.DeleteReview(review);
             await GetReviewsAsync();
+            await GetUserReviewsAsync();
         }
         
         public event EventHandler<EventArgs>? ListChanged;

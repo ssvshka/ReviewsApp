@@ -6,7 +6,7 @@ namespace CourseProject.Models
 {
     public class User : IdentityUser
     {
-        public virtual ICollection<Review>? Reviews { get; set; }
-        public virtual ICollection<Comment>? Comments { get; set; }
+        public ICollection<Review>? Reviews { get; set; }
+        public ICollection<Comment>? Comments { get; set; }
     }
 }

@@ -14,9 +14,9 @@ namespace CourseProject.Models
         public decimal AuthorRating { get; set; }
         [Column(TypeName = "decimal(5, 2)")]
         public decimal UserRating { get; set; }
-        public virtual Category Category { get; set; } = default!;
+        public Category Category { get; set; } = default!;
         public int CategoryId { get; set; }
-        public virtual ICollection<Review>? Reviews { get; set; }
+        public ICollection<Review>? Reviews { get; set; }
 
         public override string ToString() => Title;
     }

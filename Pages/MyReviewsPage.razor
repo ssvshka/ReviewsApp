@@ -1,23 +1,52 @@
 ﻿@page "/MyReviews"
 @using CourseProject.Services
+@inject ViewService viewService
 @inject NavigationManager navigationManager
-@inject ReviewService reviewService
-
 
 <MudButton OnClick="RedirectToReviewForm" Variant="Variant.Filled">Write review</MudButton>
-<ReviewsList />
 
-
+@if (viewService.CurrentUserReviews is not null)
+{
+    @foreach (var r in viewService.CurrentUserReviews!)
+    {
+        <MudCard>
+            <MudCardMedia Image=@r.ImageUrl Height="200"/>
+            <MudCardContent>
+                <MudText Typo="Typo.h5">@r.Title</MudText>
+                <MudText Typo="Typo.body2">@r.Text</MudText>
+                <MudText Typo="Typo.caption">Posted by @r.User</MudText>
+                <MudText Typo="Typo.caption">on @r.PostedOn</MudText>
+            </MudCardContent>
+            <MudCardActions>
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" aria-label="edit" OnClick="() => NavigateToEditForm(r.Id)"></MudIconButton>
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete" OnClick="() => DeleteReview(r)"></MudIconButton>
+            </MudCardActions>
+        </MudCard>
+    }
+}
+else
+{
+    <p>You dont have any reviews yet. Consider write one!</p>
+}
 @code {
-    private List<Review> reviews = new();
-
     protected override async Task OnInitializedAsync()
     {
-        reviews = await reviewService.GetReviewsAsync();
+        await viewService.GetUserReviewsAsync();
+        viewService.ListChanged += OnListChanged;
     }
 
     private void RedirectToReviewForm()
-    {
-        navigationManager.NavigateTo("/ReviewForm");
-    }
+        => navigationManager.NavigateTo("/ReviewForm");
+
+    private void OnListChanged(object? sender, EventArgs e)
+        => this.InvokeAsync(this.StateHasChanged);
+
+    private async Task DeleteReview(Review review)
+        => await viewService.DeleteReviewAsync(review);
+
+    private void NavigateToEditForm(int reviewId)
+        => navigationManager.NavigateTo($"/Edit/{reviewId}");
+
+    public void Dispose()
+        => viewService.ListChanged -= OnListChanged;
 }
