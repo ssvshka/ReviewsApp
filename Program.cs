@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.DataProtection;
 using CourseProject.Data;
 using CourseProject.Models;
 using CourseProject.Services;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
@@ -21,6 +22,7 @@ builder.Services.AddDbContextFactory<ApplicationDbContext>(options => options.Us
 builder.Services.AddScoped<ReviewService>();
 builder.Services.AddScoped<ViewService>();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<AzureStorageHelper>();   
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddDefaultIdentity<User>(options =>
 {
@@ -42,12 +44,12 @@ builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuth
 builder.Services.AddMudServices();
 builder.Services.AddAuthentication().AddMicrosoftAccount(microsoftOptions =>
 {
-    microsoftOptions.ClientId = config["Authentication:Microsoft:ClientId"];
-    microsoftOptions.ClientSecret = config["Authentication:Microsoft:ClientSecret"];
+    microsoftOptions.ClientId = config["Authentication:Microsoft:ClientId"]!;
+    microsoftOptions.ClientSecret = config["Authentication:Microsoft:ClientSecret"]!;
 }).AddGoogle(googleOptions =>
 {
-    googleOptions.ClientId = config["Authentication:Google:ClientId"];
-    googleOptions.ClientSecret = config["Authentication:Google:ClientSecret"];
+    googleOptions.ClientId = config["Authentication:Google:ClientId"]!;
+    googleOptions.ClientSecret = config["Authentication:Google:ClientSecret"]!;
 });
 
 var app = builder.Build();
@@ -67,6 +69,7 @@ app.UseDeveloperExceptionPage();
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();
+
 
 app.UseRouting();
 

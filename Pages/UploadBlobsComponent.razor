@@ -1,0 +1,111 @@
+﻿@page "/blobfiles"
+@inject AzureStorageHelper AzureStorageHelper
+@inject IConfiguration Configuration
+
+<h3>Upload photo to Azure</h3>
+@if (ImageUrl != "")
+{
+    <img src="@ImageUrl" />
+    <br />
+    <br />
+}
+
+<MudStack Style="width: 100%">
+    <MudFileUpload T="IReadOnlyList<IBrowserFile>" OnFilesChanged="OnInputFileChange" Hidden="@Uploading"
+                   Class="flex-1" InputClass="absolute mud-width-full mud-height-full overflow-hidden z-20" InputStyle="opacity:0"
+                   @ondragenter="@HandleDragEnter" @ondragleave="@HandleDragLeave" @ondragend="@HandleDragLeave">
+        <ButtonTemplate>
+            <MudPaper Height="300px" Outlined="true" Class="@dropClass">
+                <MudText Typo="Typo.h6">Drag and drop files here or click</MudText>
+            </MudPaper>
+        </ButtonTemplate>
+    </MudFileUpload>
+</MudStack>
+
+<br />
+<h3>Blob Files</h3>
+<ul>
+    @foreach (var url in BlobFileUrls)
+    {
+        <li><a href="@url">@url</a><br /></li>
+    }
+</ul>
+@code
+{
+    string ImageUrl = "";
+    bool Uploading = false;
+    List<string> BlobFileUrls = new List<string>();
+    string ContainerName = "blazortrain"; // This could optionally be in the config file
+
+    string dropClass = string.Empty;
+    void HandleDragEnter()
+    {
+        dropClass = "relative rounded-lg border-2 border-dashed pa-4 mt-4 mud-width-full mud-height-full z-10";
+    }
+    void HandleDragLeave()
+    {
+        dropClass = string.Empty;
+    }
+
+    async Task OnInputFileChange(InputFileChangeEventArgs args)
+    {
+        dropClass = string.Empty;
+
+        try
+        {
+            // disable the upload pane
+            Uploading = true;
+            await InvokeAsync(StateHasChanged);
+
+            // Resize to no more than 400x400
+            var format = "image/png";
+            var resizedImageFile = await args.File.RequestImageFileAsync(format, 400, 400);
+
+            // read resized png data into a buffer
+            var buffer = new byte[resizedImageFile.Size];
+            await resizedImageFile.OpenReadStream().ReadAsync(buffer);
+
+            // get new filename with a bit of entropy
+            string justFileName = Path.GetFileNameWithoutExtension(args.File.Name);
+            string newFileNameWithoutPath = $"{justFileName}-{DateTime.Now.Ticks.ToString()}.png";
+            string filename = $"{Environment.CurrentDirectory}\\files\\{newFileNameWithoutPath}";
+
+            // write the file
+            File.WriteAllBytes(filename, buffer);
+
+            // upload to Azure Storage
+            string baseUrl = Configuration["StorageBaseUrl"];
+            string bloburl = $"{baseUrl}{ContainerName}/";
+
+            // Copy to Azure
+            ImageUrl = await AzureStorageHelper.UploadFile(ContainerName, filename, newFileNameWithoutPath, false);
+            if (ImageUrl != "")
+            {
+                // delete local file
+                File.Delete(filename);
+                await ListFiles();
+            }
+
+            Uploading = false;
+
+        }
+        catch (Exception ex)
+        {
+            Uploading = false;
+            await InvokeAsync(StateHasChanged);
+            System.Diagnostics.Debug.WriteLine(ex.Message);
+            throw;
+        }
+    }
+
+    async Task ListFiles()
+    {
+        BlobFileUrls = await AzureStorageHelper.GetFileList(ContainerName);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ListFiles();
+    }
+}
