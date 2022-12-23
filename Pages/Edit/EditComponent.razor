@@ -16,7 +16,7 @@
                 </MudSelect>
                 <MudTextField T="string" Label="Review Title" @bind-Value="review.Title"
                               Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true"></MudTextField>
-                <MudAutocomplete T="Work" Label="Work" @bind-Value="work" SearchFunc="@SearchWorks"
+                <MudAutocomplete T="Work" Label="Work" @bind-Value="review.Work" SearchFunc="@SearchWorks"
                                  Variant="Variant.Outlined" CoerceValue=true />
                 <MudAutocomplete T="Tag" Label="reviewTags" ValueChanged="AddTag" SearchFunc="@SearchTags"
                                  Variant="Variant.Outlined" CoerceValue="true" />
@@ -40,21 +40,26 @@
     </MudItem>
 </MudGrid>
 
+<MudCardActions>
+    <MudButton>Open</MudButton>
+    <MudIconButton Icon="@Icons.Material.Filled.Edit" aria-label="edit"></MudIconButton>
+    <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete"></MudIconButton>
+</MudCardActions>
+
 @code {
     private List<Category> allCategories = new();
     private List<Work> allWorks = new();
     private List<Tag> allTags = new();
     private Category category = new();
-    private Work work = new();
     private List<Tag> reviewTags = new();
     private decimal rating;
 
     private Review review = new();
 
     [Parameter]
-    public int? ReviewId { get; set; }
+    public int ReviewId { get; set; }
 
-    protected async override void OnInitialized()
+    protected async override Task OnInitializedAsync()
     {
         allTags = await reviewService.GetTags();
         allCategories = await reviewService.GetCategories();
@@ -64,18 +69,8 @@
 
     private async Task PublishReviewAndRedirectToHome()
     {
-        SetReviewData();
-        await reviewService.AddReview(review);
+        await reviewService.EditReview(review);
         navigationManager.NavigateTo("/");
-    }
-
-    private void SetReviewData()
-    {
-        review.WorkId = work.Id;
-        work.CategoryId = category.Id;
-        work.AuthorRating = rating;
-        review.PostedOn = DateTime.Now;
-        SetReviewTags();
     }
 
     private void SetReviewTags()

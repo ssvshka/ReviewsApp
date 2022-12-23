@@ -16,20 +16,29 @@ namespace CourseProject.Services
         public async Task<List<Review>> GetReviewsAsync()
         {
             using var ctx = _dbContextFactory.CreateDbContext();
-            return await ctx.Reviews.ToListAsync();
+            return await ctx.Reviews
+                .OrderByDescending(r => r.PostedOn)
+                .ToListAsync();
         }
 
         public async Task<List<Review>> GetCurrentUserReviewsAsync(string userId)
         {
             using var ctx = _dbContextFactory.CreateDbContext();
             return await ctx.Reviews
-                            .Where(u => u.UserId == userId)
+                            .Where(r => r.UserId == userId)
+                            .OrderByDescending(r => r.PostedOn)
                             .ToListAsync();
         }
         public async Task AddReview(Review review)
         {
             using var ctx = _dbContextFactory.CreateDbContext();
             ctx.Reviews.Add(review);
+            await ctx.SaveChangesAsync();
+        }
+        public async Task EditReview(Review review)
+        {
+            using var ctx = _dbContextFactory.CreateDbContext();
+            ctx.Update(review);
             await ctx.SaveChangesAsync();
         }
 
@@ -43,16 +52,23 @@ namespace CourseProject.Services
         public async Task<Review> GetReviewByIdAsync(int? id)
         {
             using var ctx = _dbContextFactory.CreateDbContext();
-            return await ctx.Reviews.SingleAsync(r => r.Id == id);
+            return await ctx.Reviews
+                .Include(r => r.Work)
+                .ThenInclude(w => w.Category)
+                .Include(r => r.User)
+                .Include(r => r.Comments)
+                .Include(r => r.TagsLink)
+                .ThenInclude(t => t.Tag)
+                .SingleAsync(r => r.Id == id);
         }
 
         public async Task<List<Work>> GetWorks()
         {
             using var ctx = _dbContextFactory.CreateDbContext();
-            return await ctx.Works.ToListAsync();
+            return await ctx.Works
+                .OrderBy(w => w.Title)
+                .ToListAsync();
         }
-
-
 
         public async Task AddWork(Work work)
         {
@@ -75,13 +91,34 @@ namespace CourseProject.Services
         public async Task<List<Tag>> GetTags()
         {
             using var ctx = _dbContextFactory.CreateDbContext();
-            return await ctx.Tags.ToListAsync();
+            return await ctx.Tags
+                .OrderBy(w => w.Title)
+                .ToListAsync();
         }
 
         public async Task<List<Category>> GetCategories()
         {
             using var ctx = _dbContextFactory.CreateDbContext();
-            return await ctx.Categories.ToListAsync();
+            return await ctx.Categories
+                .OrderBy(w => w.Title)
+                .ToListAsync();
+        }
+
+        public async Task<List<Comment>> GetReviewComments(int reviewId)
+        {
+            using var ctx = _dbContextFactory.CreateDbContext();
+            return await ctx.Comments
+                .Where(c => c.ReviewId == reviewId)
+                .OrderBy(c => c.LeftOn) 
+                .Include(c => c.User)
+                .ToListAsync(); 
+        }
+
+        public async Task AddCommentAsync(Comment comment)
+        {
+            using var ctx = _dbContextFactory.CreateDbContext();
+            await ctx.Comments.AddAsync(comment);
+            await ctx.SaveChangesAsync();
         }
     }
 }

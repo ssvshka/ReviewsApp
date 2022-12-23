@@ -1,0 +1,92 @@
+﻿@inject NavigationManager navigationManager
+@inject ReviewService reviewService
+@inject UserService userService
+@inject ViewService viewService
+@implements IAsyncDisposable
+@page "/review/{reviewId:int}"
+
+@if (review is null)
+{
+    <text>Loading...</text>
+}
+else
+{
+    <MudCard>
+        <MudCardMedia Image=@review.ImageUrl></MudCardMedia>
+        <MudCardContent>
+            <MudText Typo="Typo.h5">@review.Title</MudText>
+            <MudMarkdown Value="@review.Text" />
+            <MudText Typo="Typo.caption">Posted by @review.User.Email</MudText>
+            <MudText Typo="Typo.caption">on @review.PostedOn</MudText>
+        </MudCardContent>
+    </MudCard>
+    <MudTextField T="string" Label="Leave a comment here..." Variant="Variant.Outlined" @bind-Value="@comment.Text" Lines="3" />
+    <MudButton OnClick="Send" Variant="Variant.Filled" Color="Color.Primary">Post</MudButton>
+    @if (viewService.Comments is not null)
+    {
+        @foreach (var c in viewService.Comments)
+        {
+            <CommentViewComp Comment="@c"></CommentViewComp>
+        }
+    }
+    else
+    {
+        <MudText>There is no comments under this review.</MudText>
+    }
+}
+
+@code {
+    private HubConnection? hubConnection;
+    [Parameter]
+    public int ReviewId { get; set; }
+    private Comment comment = default!;
+    private Review review = default!;
+
+    protected async override Task OnInitializedAsync()
+    {
+        review = await reviewService.GetReviewByIdAsync(ReviewId);
+        await viewService.GetCommentsAsync(ReviewId);
+        comment = new Comment();
+        await OpenHubConnection();
+    }
+    
+    private async Task OpenHubConnection()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(navigationManager.ToAbsoluteUri("/commenthub"))
+            .Build();
+
+        hubConnection.On<Comment>("ReceiveComment", async (comment) =>
+        {
+            await viewService.GetCommentsAsync(ReviewId);
+            await InvokeAsync(StateHasChanged);
+        });
+
+        await hubConnection.StartAsync();
+    }
+
+    private async Task Send()
+    {
+        if (hubConnection is not null)
+        {
+            await SetCommentProperties();
+            await reviewService.AddCommentAsync(comment);
+            await hubConnection.SendAsync("PostComment", comment);
+        }
+    }
+    
+    private async Task SetCommentProperties()
+    {
+        comment.LeftOn = DateTime.Now;
+        comment.UserId = await userService.GetCurrentUserId();
+        comment.ReviewId = ReviewId;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+}

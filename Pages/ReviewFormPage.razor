@@ -35,8 +35,7 @@
                         </MudItem>
                         <br /> <br /> <br />
                         <Editor @bind-Value="review.Text" />
-                        <MudTextField T="string" Label="Image Link" @bind-Value="review.ImageUrl"
-                                        Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true"></MudTextField>
+                        <UploadBlobsComponent @bind-ImageUrl="review.ImageUrl"/>
                         <MudRating @bind-Value="rating" MaxValue="10" />
                         <MudButton OnClick="PublishReviewAndRedirectToHome" Variant="Variant.Filled">Publish</MudButton>
                     </MudForm>   

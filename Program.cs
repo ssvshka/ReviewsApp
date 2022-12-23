@@ -1,16 +1,13 @@
-using CourseProject.Areas.Identity;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
-using Azure.Identity;
-using CloudinaryDotNet;
-using dotenv.net;
-using Microsoft.AspNetCore.DataProtection;
-using CourseProject.Data;
-using CourseProject.Models;
+using MudBlazor;
+using CourseProject.Areas.Identity;
 using CourseProject.Services;
-using Microsoft.Extensions.FileProviders;
+using CourseProject.Models;
+using CourseProject.Data;
+using CourseProject.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
@@ -42,6 +39,7 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<User>>();
 builder.Services.AddMudServices();
+builder.Services.AddMudMarkdownServices();
 builder.Services.AddAuthentication().AddMicrosoftAccount(microsoftOptions =>
 {
     microsoftOptions.ClientId = config["Authentication:Microsoft:ClientId"]!;
@@ -50,6 +48,12 @@ builder.Services.AddAuthentication().AddMicrosoftAccount(microsoftOptions =>
 {
     googleOptions.ClientId = config["Authentication:Google:ClientId"]!;
     googleOptions.ClientSecret = config["Authentication:Google:ClientSecret"]!;
+});
+
+builder.Services.AddResponseCompression(opts =>
+{
+    opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+        new[] { "application/octet-stream" });
 });
 
 var app = builder.Build();
@@ -70,6 +74,7 @@ app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 
+app.UseResponseCompression();
 
 app.UseRouting();
 
@@ -77,6 +82,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapBlazorHub();
+app.MapHub<CommentHub>("/commenthub");
 app.MapFallbackToPage("/_Host");
 
 app.Run();

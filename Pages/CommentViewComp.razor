@@ -1,0 +1,15 @@
+﻿<MudCard Outlined="true">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudField Variant="Variant.Outlined">@Comment.User.Email wrote on @Comment.LeftOn</MudField>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudMarkdown Value="@Comment.Text" />
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [Parameter]
+    public Comment Comment { get; set; } = default!;
+}

@@ -1,0 +1,36 @@
+﻿@inject ViewService viewService
+@inject NavigationManager navigationManager
+
+<MudCard>
+    <MudCardMedia Image=@Review.ImageUrl Height="200" />
+    <MudCardContent>
+        <MudText Typo="Typo.h5">@Review.Title</MudText>
+        <MudMarkdown Value="@Review.Text" />
+        <MudText Typo="Typo.caption">Posted by @Review.User</MudText>
+        <MudText Typo="Typo.caption">on @Review.PostedOn</MudText>
+    </MudCardContent>
+    @*<AuthorizeView Roles="Admin">*@
+        <MudCardActions>
+            <MudButton OnClick="() => NavigateTo(review, Review.Id)">Open</MudButton>
+            <MudIconButton Icon="@Icons.Material.Filled.Edit" aria-label="edit" OnClick="() => NavigateTo(edit, Review.Id)"></MudIconButton>
+            <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete" OnClick="() => DeleteReview(Review)"></MudIconButton>
+        </MudCardActions>
+    @*</AuthorizeView>*@
+</MudCard>
+
+@code {
+    [Parameter]
+    public Review Review { get; set; } = default!;
+
+    //[Parameter]
+    //public string Roles { get; set; } = default!;
+
+    private string edit = "edit";
+    private string review = "review";
+
+    private async Task DeleteReview(Review review)
+        => await viewService.DeleteReviewAsync(review);
+
+    private void NavigateTo(string page, int reviewId)
+        => navigationManager.NavigateTo($"/{page}/{reviewId}");
+}
