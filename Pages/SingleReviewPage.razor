@@ -20,8 +20,13 @@ else
             <MudText Typo="Typo.caption">on @review.PostedOn</MudText>
         </MudCardContent>
     </MudCard>
-    <MudTextField T="string" Label="Leave a comment here..." Variant="Variant.Outlined" @bind-Value="@comment.Text" Lines="3" />
-    <MudButton OnClick="Send" Variant="Variant.Filled" Color="Color.Primary">Post</MudButton>
+    <AuthorizeView>
+        <Authorized>
+            <MudTextField T="string" Label="Leave a comment here..." Variant="Variant.Outlined" @bind-Value="@comment.Text" Lines="3" />
+            <MudButton OnClick="Send" Variant="Variant.Filled" Color="Color.Primary">Post</MudButton>
+        </Authorized>
+        <NotAuthorized>Login to leave a comment.</NotAuthorized>
+    </AuthorizeView>
     @if (viewService.Comments is not null)
     {
         @foreach (var c in viewService.Comments)

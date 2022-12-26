@@ -6,6 +6,7 @@ namespace CourseProject.Models
 {
     public class User : IdentityUser
     {
+        public int LikesAmount { get; set; }    
         public ICollection<Review>? Reviews { get; set; }
         public ICollection<Comment>? Comments { get; set; }
     }

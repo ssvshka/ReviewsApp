@@ -13,12 +13,13 @@ namespace CourseProject.Data
             : base(options)
         {
         }
-        public DbSet<Review> Reviews { get; set; }
-        public DbSet<Work> Works { get; set; }
-        public DbSet<Tag> Tags { get; set; }
         public DbSet<Category> Categories { get; set; }
-        public DbSet<User> Users { get; set; }
         public DbSet<Comment> Comments { get; set; }
+        public DbSet<Review> Reviews { get; set; }
+        public DbSet<Tag> Tags { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<Work> Works { get; set; }
+        public DbSet<UserRating> UserRatings { get; set; }
         
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -43,6 +44,8 @@ namespace CourseProject.Data
                 new Tag { Id = 4, Title = "Short" });
             builder.Entity<Work>()
                 .HasData(new Work { Id = 1, Title = "Cars", CategoryId = 1 });
+            builder.Entity<UserRating>()
+                .HasNoKey();
         }
     }
 }

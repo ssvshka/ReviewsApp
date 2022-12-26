@@ -1,8 +1,8 @@
 ﻿@page "/ReviewForm"
-@using CourseProject.Services;
-@using Microsoft.EntityFrameworkCore;
+@using CourseProject.Services
 @using TinyMCE.Blazor
 @inject ReviewService reviewService
+@inject ViewService viewService
 @inject UserService userService
 @inject NavigationManager navigationManager
 
@@ -12,16 +12,19 @@
             <MudItem xs="12" sm="7">
                 <MudPaper Class="pa-4">
                     <MudForm>
-                        <MudSelect T="Category" @bind-Value="category" Label="Category" Dense="true" Variant="Variant.Outlined">
-                            @foreach (var item in allCategories)
+                        <MudSelect T="Category" ValueChanged="SetCategory" Label="Category" Dense="true" Variant="Variant.Outlined">
+                            @if (viewService.Categories is not null)
                             {
-                                <MudSelectItem Value="@item">@item</MudSelectItem>
+                                @foreach (var item in viewService.Categories!)
+                                {
+                                    <MudSelectItem Value="@item"/>
+                                }
                             }
                         </MudSelect>
                         <MudTextField T="string" Label="Review Title" @bind-Value="review.Title" 
                                             Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true"></MudTextField>
-                        <MudAutocomplete T="Work" Label="Work" @bind-Value="work" SearchFunc="@SearchWorks" 
-                                            Variant="Variant.Outlined" CoerceValue=true />
+                        <MudAutocomplete T="string" Label="Work" SearchFunc="@SearchWorks" @bind-Value="workTitle"
+                                            Variant="Variant.Outlined" OnBlur="CreateWork" CoerceValue="true" Disabled="isCategoryNull"/>
                         <MudAutocomplete T="Tag" Label="Tags" ValueChanged="AddTag" SearchFunc="@SearchTags" 
                                             Variant="Variant.Outlined" CoerceValue="true" />
                         <MudItem xs="12" md="12">
@@ -36,8 +39,8 @@
                         <br /> <br /> <br />
                         <Editor @bind-Value="review.Text" />
                         <UploadBlobsComponent @bind-ImageUrl="review.ImageUrl"/>
-                        <MudRating @bind-Value="rating" MaxValue="10" />
-                        <MudButton OnClick="PublishReviewAndRedirectToHome" Variant="Variant.Filled">Publish</MudButton>
+                        <MudRating @bind-SelectedValue="rating" MaxValue="10" />
+                        <MudButton OnClick="PublishReviewAndRedirectToHome" @onkeydown="@Enter" Variant="Variant.Filled">Publish</MudButton>
                     </MudForm>   
                 </MudPaper>
             </MudItem>
@@ -49,21 +52,22 @@
 </AuthorizeView>
 
 @code {
-    private List<Category> allCategories = new();
-    private List<Work> allWorks = new();
-    private List<Tag> allTags = new();
+    const string DEFAULT_IMAGE = "https://placehold.co/600x400/EEE/31343C?font=lora&text=Oops...+Image+is+missing";
+    
     private Category category = default!;
     private Work work = default!;
+    private string workTitle = "";
     private List<Tag> reviewTags = new();
-    private decimal rating;
+    private int rating;
+    private bool isCategoryNull = true;
 
     private Review review = new();
 
     protected override async Task OnInitializedAsync()
     {
-        allTags = await reviewService.GetTags();
-        allCategories = await reviewService.GetCategories();
-        allWorks = await reviewService.GetWorks();
+        if (viewService.Tags is null)
+            await viewService.GetTagsAsync();
+        await viewService.GetCategoriesAsync();
     }
 
     private async Task PublishReviewAndRedirectToHome()
@@ -75,12 +79,39 @@
 
     private async Task SetReviewData()
     {
+        await SetWork();
+        await reviewService.CalculateAuthorRating(work.Id, rating);
         review.WorkId = work.Id;
-        work.CategoryId = category.Id;
-        work.AuthorRating = rating;
         review.PostedOn = DateTime.Now;
         review.UserId = await userService.GetCurrentUserId();
+        if (review.ImageUrl is null)
+            review.ImageUrl = DEFAULT_IMAGE;
         SetReviewTags();
+    }
+
+    private void SetCategory(Category value)
+    {
+        category = value;
+        isCategoryNull = false;
+    }
+
+    private async Task SetWork()
+    {
+        if (!await reviewService.FindWorkByTitle(workTitle))
+        {    
+            CreateWork();
+            await reviewService.AddWork(work);
+        }
+        else work = await reviewService.GetWorkByTitle(workTitle);
+    }
+
+    private void CreateWork()
+    {
+        work = new Work
+            {
+                Title = workTitle,
+                CategoryId = category.Id,
+            };
     }
 
     private void SetReviewTags()
@@ -96,30 +127,38 @@
         }
     }
 
-    private void AddTag(Tag value)
+    private async Task AddTag(Tag tag)
     {
-        if (!allTags.Contains(value))
-            allTags.Add(value);
+        if (!viewService.Tags!.Contains(tag))
+            await reviewService.AddTag(tag);
 
-        if (!reviewTags.Contains(value))
-            reviewTags.Add(value);
+        if (!reviewTags.Contains(tag))
+            reviewTags.Add(tag);
     }
 
     private async Task<IEnumerable<Tag>> SearchTags(string value)
     {
-        await Task.Delay(5);
-
         if (string.IsNullOrEmpty(value))
-            return allTags;
-        return allTags.Where(x => x.Title.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+            return viewService.Tags!;
+        return await viewService.FindTagsByValueAsync(value);
     }
 
-    private async Task<IEnumerable<Work>> SearchWorks(string value)
+    private async Task<IEnumerable<string>> SearchWorks(string value)
     {
-        await Task.Delay(5);
-
+        await viewService.GetWorksByCategoryAsync(category.Id);
         if (string.IsNullOrEmpty(value))
-            return allWorks;
-        return allWorks.Where(x => x.Title.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+        {    
+            return viewService.Works!
+                .Select(x => x.Title);
+        }
+        return viewService.Works!
+            .Where(x => x.Title.Contains(value, StringComparison.InvariantCultureIgnoreCase))
+            .Select(x => x.Title);
+    }
+
+    private async Task Enter(KeyboardEventArgs e)
+    {
+        if (e.Code == "Enter" || e.Code == "NumpadEnter")
+            await PublishReviewAndRedirectToHome();
     }
 }

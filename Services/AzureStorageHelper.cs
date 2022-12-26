@@ -26,7 +26,7 @@ namespace CourseProject.Services
         {
             var container = OpenContainer();
             await container.UploadBlobAsync(
-                filename, file.OpenReadStream());
+                filename, file.OpenReadStream(8192000));
         }
 
         private BlobContainerClient OpenContainer()

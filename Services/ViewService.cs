@@ -12,6 +12,9 @@ namespace CourseProject.Services
         public List<Review>? CurrentUserReviews { get; private set; }
         public List<User>? Users { get; private set; }
         public List<Comment>? Comments { get; private set; }
+        public List<Tag>? Tags { get; private set; }
+        public List<Work>? Works { get; private set; }
+        public List<Category>? Categories { get; private set; }
 
         public ViewService(ReviewService reviewService, UserService userService)
         {
@@ -37,19 +40,59 @@ namespace CourseProject.Services
             NotifyListChanged(Users, EventArgs.Empty);
         }
 
-        public async Task GetCommentsAsync(int reviewId)
-        {
-            Comments = await _reviewService.GetReviewComments(reviewId);
-            NotifyListChanged(Comments, EventArgs.Empty);
-        }
-
         public async Task DeleteReviewAsync(Review review)
         {
             await _reviewService.DeleteReview(review);
             await GetReviewsAsync();
             await GetUserReviewsAsync();
         }
-        
+
+        public async Task UpdateUserRating(int workId, int rating)
+        {
+            await _reviewService.CalculateUserRating(workId, rating);
+        }
+
+        public async Task GetCommentsAsync(int reviewId)
+        {
+            Comments = await _reviewService.GetReviewComments(reviewId);
+            NotifyListChanged(Comments, EventArgs.Empty);
+        }
+
+        public async Task GetTagsAsync()
+        {
+            Tags = await _reviewService.GetTags();
+            NotifyListChanged(Tags, EventArgs.Empty);
+        }
+
+        public async Task GetCategoriesAsync()
+        {
+            Categories = await _reviewService.GetCategories();
+            NotifyListChanged(Categories, EventArgs.Empty);
+        }
+
+        public async Task<List<Tag>> FindTagsByValueAsync(string value)
+        {
+            return await _reviewService.FindTagsByValue(value);
+        }
+
+        public async Task GetWorksByCategoryAsync(int categoryId)
+        {
+            Works = await _reviewService.GetWorksByCategory(categoryId);
+            NotifyListChanged(Works, EventArgs.Empty);
+        }
+
+        public async Task GetAllWorksAsync()
+        {
+            Works = await _reviewService.GetAllWorks();
+            NotifyListChanged(Works, EventArgs.Empty);
+        }
+
+        public async Task DeleteWorkAsync(Work work)
+        {
+            await _reviewService.DeleteWork(work);
+            await GetAllWorksAsync();
+        }
+
         public event EventHandler<EventArgs>? ListChanged;
 
         public void NotifyListChanged(object sender, EventArgs e)

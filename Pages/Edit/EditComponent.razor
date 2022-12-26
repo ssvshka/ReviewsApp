@@ -8,7 +8,7 @@
     <MudItem xs="12" sm="7">
         <MudPaper Class="pa-4">
             <MudForm>
-                <MudSelect T="Category" @bind-Value="category" Label="Category" Dense="true" Variant="Variant.Outlined">
+                <MudSelect T="Category" @bind-Value="review.Work.Category" Label="Category" Dense="true" Variant="Variant.Outlined">
                     @foreach (var item in allCategories)
                     {
                         <MudSelectItem Value="@item">@item</MudSelectItem>
@@ -40,12 +40,6 @@
     </MudItem>
 </MudGrid>
 
-<MudCardActions>
-    <MudButton>Open</MudButton>
-    <MudIconButton Icon="@Icons.Material.Filled.Edit" aria-label="edit"></MudIconButton>
-    <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete"></MudIconButton>
-</MudCardActions>
-
 @code {
     private List<Category> allCategories = new();
     private List<Work> allWorks = new();
@@ -63,7 +57,7 @@
     {
         allTags = await reviewService.GetTags();
         allCategories = await reviewService.GetCategories();
-        allWorks = await reviewService.GetWorks();
+        //allWorks = await reviewService.GetWorks();
         review = await reviewService.GetReviewByIdAsync(ReviewId);
     }
 

@@ -17,6 +17,12 @@ namespace CourseProject.Services
         {
             using var ctx = _dbContextFactory.CreateDbContext();
             return await ctx.Reviews
+                .Include(r => r.Work)
+                .ThenInclude(w => w.Category)
+                .Include(r => r.User)
+                .Include(r => r.Comments)
+                .Include(r => r.TagsLink)
+                .ThenInclude(t => t.Tag)
                 .OrderByDescending(r => r.PostedOn)
                 .ToListAsync();
         }
@@ -25,9 +31,15 @@ namespace CourseProject.Services
         {
             using var ctx = _dbContextFactory.CreateDbContext();
             return await ctx.Reviews
-                            .Where(r => r.UserId == userId)
-                            .OrderByDescending(r => r.PostedOn)
-                            .ToListAsync();
+                .Where(r => r.UserId == userId)
+                .Include(r => r.Work)
+                .ThenInclude(w => w.Category)
+                .Include(r => r.User)
+                .Include(r => r.Comments)
+                .Include(r => r.TagsLink)
+                .ThenInclude(t => t.Tag)
+                .OrderByDescending(r => r.PostedOn)
+                .ToListAsync();
         }
         public async Task AddReview(Review review)
         {
@@ -62,13 +74,29 @@ namespace CourseProject.Services
                 .SingleAsync(r => r.Id == id);
         }
 
-        public async Task<List<Work>> GetWorks()
+        public async Task<List<Work>> GetWorksByCategory(int categoryId)
+        {
+            using var ctx = _dbContextFactory.CreateDbContext();
+            return await ctx.Works
+                .Where(w => w.CategoryId == categoryId)
+                .OrderBy(w => w.Title)
+                .ToListAsync();
+        }
+
+        public async Task<List<Work>> GetAllWorks()
         {
             using var ctx = _dbContextFactory.CreateDbContext();
             return await ctx.Works
                 .OrderBy(w => w.Title)
                 .ToListAsync();
         }
+        public async Task DeleteWork(Work work)
+        {
+            using var ctx = _dbContextFactory.CreateDbContext();
+            ctx.Works.Remove(work);
+            await ctx.SaveChangesAsync();
+        }
+
 
         public async Task AddWork(Work work)
         {
@@ -77,14 +105,61 @@ namespace CourseProject.Services
             await ctx.SaveChangesAsync();
         }
 
-        public async Task AddTags(List<Tag> tags)
+        public async Task<bool> FindWorkByTitle(string title)
         {
             using var ctx = _dbContextFactory.CreateDbContext();
-            foreach (var t in tags)
-            {
-                if (!ctx.Tags.Contains(t))
-                    await ctx.Tags.AddAsync(t);
-            }
+            return await ctx.Works
+                .Where(w => w.Title == title)
+                .AnyAsync();
+        }
+
+        public async Task<Work> GetWorkByTitle(string title)
+        {
+            using var ctx = _dbContextFactory.CreateDbContext();
+            return await ctx.Works
+                .Where(w => w.Title == title)
+                .SingleAsync();
+        }
+
+        public async Task CalculateAuthorRating(int workId, int rating)
+        {
+            using var ctx = _dbContextFactory.CreateDbContext();
+            var c = GetReviewsNumber(workId, ctx);
+            ctx.Works
+                .Single(w => w.Id == workId)
+                .OverallAuthorRating += rating / (c + 1);
+            await ctx.SaveChangesAsync();
+        }
+
+        public async Task CalculateUserRating(int workId, int rating)
+        {
+            using var ctx = _dbContextFactory.CreateDbContext();
+            
+            var g = ctx.Works
+                .Single(w => w.Id == workId)
+                .GradeAmount;
+            ctx.Works
+                .Single(w => w.Id == workId)
+                .OverallUserRating += rating / (g + 1);
+            await ctx.SaveChangesAsync();
+        }
+
+        private static int GetReviewsNumber(int workId, ApplicationDbContext ctx)
+            => ctx.Reviews
+                .Where(w => w.WorkId == workId)
+                .Count();
+
+        public async Task SetUserRating(int rating)
+        {
+            using var ctx = _dbContextFactory.CreateDbContext();
+
+        }
+
+        public async Task AddTag(Tag tag)
+        {
+            using var ctx = _dbContextFactory.CreateDbContext();
+            if (!ctx.Tags.Contains(tag))
+                await ctx.Tags.AddAsync(tag);
             await ctx.SaveChangesAsync();
         }
 
@@ -93,6 +168,15 @@ namespace CourseProject.Services
             using var ctx = _dbContextFactory.CreateDbContext();
             return await ctx.Tags
                 .OrderBy(w => w.Title)
+                .ToListAsync();
+        }
+
+        public async Task<List<Tag>> FindTagsByValue(string value)
+        {
+            using var ctx = _dbContextFactory.CreateDbContext();
+            return await ctx.Tags
+                .OrderBy(w => w.Title)
+                .Where(x => x.Title.Contains(value, StringComparison.InvariantCultureIgnoreCase))
                 .ToListAsync();
         }
 

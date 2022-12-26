@@ -35,6 +35,7 @@ builder.Services.AddDefaultIdentity<User>(options =>
     options.User.RequireUniqueEmail = false;
 })
     .AddEntityFrameworkStores<ApplicationDbContext>();
+
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<User>>();

@@ -1,0 +1,82 @@
+﻿@page "/MyReviews"
+@using CourseProject.Services
+@inject ViewService viewService
+@inject NavigationManager navigationManager
+
+<MudButton OnClick='() => NavigateTo("reviewform")' Variant="Variant.Filled">Write a review</MudButton>
+@if (viewService.CurrentUserReviews is null)
+{
+    <text>Loading...</text>
+}
+else if (!viewService.CurrentUserReviews.Any())
+{
+    <p>You dont have any reviews yet. Consider write one!</p>
+}
+else
+{
+    <MudTable Items="@viewService.CurrentUserReviews" Filter="new Func<Review,bool>(FilterFunc)">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Your reviews</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="searchString" Placeholder="Search by category, product or review title" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh><MudTableSortLabel SortBy="new Func<Review, object>(x=>x.Title)">Review Title</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<Review, object>(x=>x.Work.Category.Title)">Category</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<Review, object>(x=>x.Work.Title)">Product</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<Review, object>(x=>x.PostedOn)">Posted On</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<Review, object>(x=>x.Work.OverallAuthorRating)">Author Rating</MudTableSortLabel></MudTh>
+            <MudTh Style="text-align: start">Open</MudTh>
+            <MudTh Style="text-align: start">Edit</MudTh>
+            <MudTh Style="text-align: start">Delete</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Review Title">@context.Title</MudTd>
+            <MudTd DataLabel="Category">@context.Work.Category.Title</MudTd>
+            <MudTd DataLabel="Product">@context.Work.Title</MudTd>
+            <MudTd DataLabel="Posted On">@context.PostedOn.ToString("dd/MM/yyyy HH:mm")</MudTd>
+            <MudTd DataLabel="Author Rating">@context.Work.OverallAuthorRating</MudTd>
+            <MudTd DataLabel="Open"><MudIconButton Icon="@Icons.Material.Filled.OpenInNew" 
+                OnClick='() => NavigateTo("review", context.Id)'>Open</MudIconButton></MudTd>
+            <MudTd DataLabel="Edit"><MudIconButton Icon="@Icons.Material.Filled.Edit" 
+                OnClick='() => NavigateTo("edit", context.Id)'></MudIconButton></MudTd>
+            <MudTd DataLabel="Delete"><MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                OnClick="() => DeleteReview(context)"></MudIconButton></MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+
+@code {
+    private string searchString = "";
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await viewService.GetUserReviewsAsync();
+        viewService.ListChanged += OnListChanged;
+    }
+
+    private void OnListChanged(object? sender, EventArgs e)
+        => this.InvokeAsync(this.StateHasChanged);
+
+    private async Task DeleteReview(Review review)
+        => await viewService.DeleteReviewAsync(review);
+
+    private void NavigateTo(string page, int? reviewId = null)
+        => navigationManager.NavigateTo($"/{page}/{reviewId}");
+
+    private bool FilterFunc(Review review)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (review.Title.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (review.Work.Category.Title.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (review.Work.Title.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        return false;
+    }
+
+    public void Dispose()
+        => viewService.ListChanged -= OnListChanged;
+}

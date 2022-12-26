@@ -4,6 +4,7 @@ using CourseProject.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CourseProject.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20221225155126_addedRatingProps")]
+    partial class addedRatingProps
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -191,21 +194,6 @@ namespace CourseProject.Migrations
                         });
                 });
 
-            modelBuilder.Entity("CourseProject.Models.UserRating", b =>
-                {
-                    b.Property<int>("Rating")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("WorkId")
-                        .HasColumnType("int");
-
-                    b.ToTable("UserRatings");
-                });
-
             modelBuilder.Entity("CourseProject.Models.Work", b =>
                 {
                     b.Property<int>("Id")
@@ -214,22 +202,22 @@ namespace CourseProject.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<decimal>("AuthorRating")
+                        .HasColumnType("decimal(5, 2)");
+
                     b.Property<int>("CategoryId")
                         .HasColumnType("int");
 
                     b.Property<int>("GradeAmount")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("OverallAuthorRating")
-                        .HasColumnType("decimal(5, 2)");
-
-                    b.Property<decimal>("OverallUserRating")
-                        .HasColumnType("decimal(5, 2)");
-
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
+
+                    b.Property<decimal>("UserRating")
+                        .HasColumnType("decimal(5, 2)");
 
                     b.HasKey("Id");
 
@@ -241,11 +229,11 @@ namespace CourseProject.Migrations
                         new
                         {
                             Id = 1,
+                            AuthorRating = 0m,
                             CategoryId = 1,
                             GradeAmount = 0,
-                            OverallAuthorRating = 0m,
-                            OverallUserRating = 0m,
-                            Title = "Cars"
+                            Title = "Cars",
+                            UserRating = 0m
                         });
                 });
 
