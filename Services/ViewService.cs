@@ -28,6 +28,12 @@ namespace CourseProject.Services
             NotifyListChanged(Reviews, EventArgs.Empty);
         }
 
+        public void OrderReviewsByRating()
+        {
+            Reviews = Reviews!.OrderByDescending(x => x.Work.OverallAuthorRating).ToList();
+            NotifyListChanged(Reviews!, EventArgs.Empty);
+        }
+
         public async Task GetUserReviewsAsync()
         {
             CurrentUserReviews = await _reviewService.GetCurrentUserReviewsAsync(await _userService.GetCurrentUserId());

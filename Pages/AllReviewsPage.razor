@@ -8,6 +8,11 @@
 }
 else
 {
+    <MudTabs Elevation="2" ApplyEffectsToContainer="true" PanelClass="pa-6">
+        <MudTabPanel OnClick="GetReviews" Text="Last Added Reviews" />
+        <MudTabPanel OnClick="viewService.OrderReviewsByRating" Text="Most Rated Reviews" />
+    </MudTabs>
+    
     @foreach (var r in viewService.Reviews!)
     {
         <ReviewCard Review="@r" />
@@ -17,10 +22,13 @@ else
 @code {
     protected override async Task OnInitializedAsync()
     {
-        await viewService.GetReviewsAsync();
+        await GetReviews();
         viewService.ListChanged += OnListChanged;
     }
-    
+
+    private async Task GetReviews()
+        => await viewService.GetReviewsAsync();
+
     private void OnListChanged(object? sender, EventArgs e)
         => this.InvokeAsync(this.StateHasChanged);
 
