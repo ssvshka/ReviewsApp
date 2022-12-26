@@ -41,14 +41,15 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<User>>();
 builder.Services.AddMudServices();
 builder.Services.AddMudMarkdownServices();
-builder.Services.AddAuthentication().AddMicrosoftAccount(microsoftOptions =>
-{
-    microsoftOptions.ClientId = config["Authentication:Microsoft:ClientId"]!;
-    microsoftOptions.ClientSecret = config["Authentication:Microsoft:ClientSecret"]!;
-}).AddGoogle(googleOptions =>
+builder.Services.AddAuthentication()
+  .AddGoogle(googleOptions =>
 {
     googleOptions.ClientId = config["Authentication:Google:ClientId"]!;
     googleOptions.ClientSecret = config["Authentication:Google:ClientSecret"]!;
+}).AddTwitter(twitterOptions =>
+{
+    twitterOptions.ConsumerKey = config["Authentication:Twitter:ConsumerAPIKey"];
+    twitterOptions.ConsumerSecret = config["Authentication:Twitter:ConsumerSecret"];
 });
 
 builder.Services.AddResponseCompression(opts =>
@@ -80,7 +81,6 @@ app.UseResponseCompression();
 app.UseRouting();
 
 app.UseAuthorization();
-
 app.MapControllers();
 app.MapBlazorHub();
 app.MapHub<CommentHub>("/commenthub");
