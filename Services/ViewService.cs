@@ -72,7 +72,7 @@ namespace CourseProject.Services
 
         public async Task<List<Tag>> FindTagsByValueAsync(string value)
         {
-            return await _reviewService.FindTagsByValue(value);
+            return await _reviewService.GetTagsByValue(value);
         }
 
         public async Task GetWorksByCategoryAsync(int categoryId)

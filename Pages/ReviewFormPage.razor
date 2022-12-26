@@ -25,8 +25,8 @@
                                             Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true"></MudTextField>
                         <MudAutocomplete T="string" Label="Work" SearchFunc="@SearchWorks" @bind-Value="workTitle"
                                             Variant="Variant.Outlined" OnBlur="CreateWork" CoerceValue="true" Disabled="isCategoryNull"/>
-                        <MudAutocomplete T="Tag" Label="Tags" ValueChanged="AddTag" SearchFunc="@SearchTags" 
-                                            Variant="Variant.Outlined" CoerceValue="true" />
+                        <MudAutocomplete T="string" Label="Tags" OnAdornmentClick="AddTag" @bind-Value="tag" SearchFunc="@SearchTags"
+                                         Variant="Variant.Outlined" AdornmentIcon="@Icons.Material.Filled.HdrPlus" CoerceValue="true" />
                         <MudItem xs="12" md="12">
                             <MudText Class="mb-n3" Typo="Typo.body2">
                                 Selected tags: 
@@ -53,20 +53,19 @@
 
 @code {
     const string DEFAULT_IMAGE = "https://placehold.co/600x400/EEE/31343C?font=lora&text=Oops...+Image+is+missing";
-    
+
     private Category category = default!;
     private Work work = default!;
     private string workTitle = "";
     private List<Tag> reviewTags = new();
     private int rating;
     private bool isCategoryNull = true;
+    private string tag = default!;
 
     private Review review = new();
 
     protected override async Task OnInitializedAsync()
     {
-        if (viewService.Tags is null)
-            await viewService.GetTagsAsync();
         await viewService.GetCategoriesAsync();
     }
 
@@ -114,6 +113,9 @@
             };
     }
 
+    private Tag CreateTag(string title)
+        => new Tag { Title = title };
+
     private void SetReviewTags()
     {
         review.TagsLink = new List<ReviewTag>();
@@ -127,30 +129,37 @@
         }
     }
 
-    private async Task AddTag(Tag tag)
+    private async Task AddTag()
     {
-        if (!viewService.Tags!.Contains(tag))
-            await reviewService.AddTag(tag);
-
-        if (!reviewTags.Contains(tag))
-            reviewTags.Add(tag);
+        if (tag is not null)
+        {
+            var t = CreateTag(tag);
+            if (!await reviewService.FindWorkByTitle(tag))
+            {
+                await reviewService.AddTag(t);
+            }
+            reviewTags.Add(t);
+        }
+        tag = "";
     }
 
-    private async Task<IEnumerable<Tag>> SearchTags(string value)
+    private async Task<IEnumerable<string>> SearchTags(string value)
     {
+        await viewService.GetTagsAsync();
         if (string.IsNullOrEmpty(value))
-            return viewService.Tags!;
-        return await viewService.FindTagsByValueAsync(value);
+            return viewService.Tags!
+                .Select(x => x.Title);
+        return viewService.Tags!
+            .Where(x => x.Title.Contains(value, StringComparison.InvariantCultureIgnoreCase))
+            .Select(x => x.Title);
     }
 
     private async Task<IEnumerable<string>> SearchWorks(string value)
     {
         await viewService.GetWorksByCategoryAsync(category.Id);
         if (string.IsNullOrEmpty(value))
-        {    
             return viewService.Works!
                 .Select(x => x.Title);
-        }
         return viewService.Works!
             .Where(x => x.Title.Contains(value, StringComparison.InvariantCultureIgnoreCase))
             .Select(x => x.Title);

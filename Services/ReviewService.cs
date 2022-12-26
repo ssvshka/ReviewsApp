@@ -171,13 +171,21 @@ namespace CourseProject.Services
                 .ToListAsync();
         }
 
-        public async Task<List<Tag>> FindTagsByValue(string value)
+        public async Task<List<Tag>> GetTagsByValue(string value)
         {
             using var ctx = _dbContextFactory.CreateDbContext();
             return await ctx.Tags
                 .OrderBy(w => w.Title)
-                .Where(x => x.Title.Contains(value, StringComparison.InvariantCultureIgnoreCase))
+                .Where(x => x.Title.Contains(value))
                 .ToListAsync();
+        }
+
+        public async Task<bool> FindTagsByTitle(string title)
+        {
+            using var ctx = _dbContextFactory.CreateDbContext();
+            return await ctx.Tags
+                .Where(x => x.Title == title)
+                .AnyAsync();
         }
 
         public async Task<List<Category>> GetCategories()
