@@ -13,10 +13,10 @@ namespace CourseProject.Services
             _dbContextFactory = dbContextFactory;
         }
 
-        public async Task<List<Review>> GetReviewsAsync()
+        public async Task<List<Review>> GetReviewsAsync(string userId = "")
         {
             using var ctx = _dbContextFactory.CreateDbContext();
-            return await ctx.Reviews
+            var reviews = await ctx.Reviews
                 .Include(r => r.Work)
                 .ThenInclude(w => w.Category)
                 .Include(r => r.User)
@@ -25,22 +25,11 @@ namespace CourseProject.Services
                 .ThenInclude(t => t.Tag)
                 .OrderByDescending(r => r.PostedOn)
                 .ToListAsync();
+            if (!string.IsNullOrEmpty(userId))
+                reviews = reviews.Where(r => r.UserId == userId).ToList();
+            return reviews;
         }
 
-        public async Task<List<Review>> GetCurrentUserReviewsAsync(string userId)
-        {
-            using var ctx = _dbContextFactory.CreateDbContext();
-            return await ctx.Reviews
-                .Where(r => r.UserId == userId)
-                .Include(r => r.Work)
-                .ThenInclude(w => w.Category)
-                .Include(r => r.User)
-                .Include(r => r.Comments)
-                .Include(r => r.TagsLink)
-                .ThenInclude(t => t.Tag)
-                .OrderByDescending(r => r.PostedOn)
-                .ToListAsync();
-        }
         public async Task AddReview(Review review)
         {
             using var ctx = _dbContextFactory.CreateDbContext();
@@ -74,11 +63,11 @@ namespace CourseProject.Services
                 .SingleAsync(r => r.Id == id);
         }
 
-        public async Task<List<Work>> GetWorksByCategory(int categoryId)
+        public async Task<List<Work>> GetWorksByCategory(Category category)
         {
             using var ctx = _dbContextFactory.CreateDbContext();
             return await ctx.Works
-                .Where(w => w.CategoryId == categoryId)
+                .Where(w => w.Category == category)
                 .OrderBy(w => w.Title)
                 .ToListAsync();
         }
@@ -118,6 +107,7 @@ namespace CourseProject.Services
             using var ctx = _dbContextFactory.CreateDbContext();
             return await ctx.Works
                 .Where(w => w.Title == title)
+                .Include(w => w.Category)
                 .SingleAsync();
         }
 
@@ -149,12 +139,6 @@ namespace CourseProject.Services
                 .Where(w => w.WorkId == workId)
                 .Count();
 
-        public async Task SetUserRating(int rating)
-        {
-            using var ctx = _dbContextFactory.CreateDbContext();
-
-        }
-
         public async Task AddTag(Tag tag)
         {
             using var ctx = _dbContextFactory.CreateDbContext();
@@ -180,12 +164,25 @@ namespace CourseProject.Services
                 .ToListAsync();
         }
 
-        public async Task<bool> FindTagsByTitle(string title)
+        public async Task<bool> FindTagByTitle(string title)
         {
             using var ctx = _dbContextFactory.CreateDbContext();
             return await ctx.Tags
-                .Where(x => x.Title == title)
-                .AnyAsync();
+                .AnyAsync(x => x.Title == title);
+        }
+
+        public async Task<Tag> GetTagByTitle(string title)
+        {
+            using var ctx = _dbContextFactory.CreateDbContext();
+            return await ctx.Tags
+                .SingleAsync(x => x.Title == title);
+        }
+
+        public Tag GetTagById(int tagId)
+        {
+            using var ctx = _dbContextFactory.CreateDbContext();
+            return ctx.Tags
+                .Single(x => x.Id == tagId);
         }
 
         public async Task<List<Category>> GetCategories()
@@ -194,6 +191,14 @@ namespace CourseProject.Services
             return await ctx.Categories
                 .OrderBy(w => w.Title)
                 .ToListAsync();
+        }
+        
+        //Consider delete
+        public async Task<Category> GetCategoryById(int catId)
+        {
+            using var ctx = _dbContextFactory.CreateDbContext();
+            return await ctx.Categories
+                .SingleAsync(w => w.Id == catId);
         }
 
         public async Task<List<Comment>> GetReviewComments(int reviewId)
@@ -210,6 +215,47 @@ namespace CourseProject.Services
         {
             using var ctx = _dbContextFactory.CreateDbContext();
             await ctx.Comments.AddAsync(comment);
+            await ctx.SaveChangesAsync();
+        }
+
+        public async Task<List<ReviewTag>> GetReviewTags(int reviewId)
+        {
+            using var ctx = _dbContextFactory.CreateDbContext();
+            return await ctx.ReviewTags
+                .Where(r => r.ReviewId == reviewId)
+                .ToListAsync();
+        }
+
+        public async Task AddTagToReview(ReviewTag reviewTag)
+        {
+            using var ctx = _dbContextFactory.CreateDbContext();
+            if (!ctx.ReviewTags.Contains(reviewTag))
+                await ctx.ReviewTags.AddAsync(reviewTag);
+            await ctx.SaveChangesAsync();
+        }
+
+        public async Task RemoveTagFromReview(int reviewId, string tagTitle)
+        {
+            using var ctx = _dbContextFactory.CreateDbContext();
+            var t = await ctx.ReviewTags
+                .Where(w => w.ReviewId == reviewId)
+                .SingleAsync(w => w.Tag.Title == tagTitle);
+            ctx.ReviewTags.Remove(t!);
+            await ctx.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// These are quite useless methods
+        /// </summary>
+        /// <param name="title"></param>
+        /// <returns></returns>
+        public async Task DeleteTag(string title)
+        {
+            using var ctx = _dbContextFactory.CreateDbContext();
+            var t = await ctx.Tags
+                .Where(w => w.Title == title)
+                .FirstOrDefaultAsync();
+            ctx.Tags.Remove(t!);
             await ctx.SaveChangesAsync();
         }
     }

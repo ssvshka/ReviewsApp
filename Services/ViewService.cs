@@ -1,5 +1,6 @@
 ﻿using CourseProject.Models;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace CourseProject.Services
 {
@@ -15,6 +16,7 @@ namespace CourseProject.Services
         public List<Tag>? Tags { get; private set; }
         public List<Work>? Works { get; private set; }
         public List<Category>? Categories { get; private set; }
+        public List<ReviewTag>? ReviewTags { get; private set; }
 
         public ViewService(ReviewService reviewService, UserService userService)
         {
@@ -34,9 +36,9 @@ namespace CourseProject.Services
             NotifyListChanged(Reviews!, EventArgs.Empty);
         }
 
-        public async Task GetUserReviewsAsync()
+        public async Task GetUserReviewsAsync(string id)
         {
-            CurrentUserReviews = await _reviewService.GetCurrentUserReviewsAsync(await _userService.GetCurrentUserId());
+            CurrentUserReviews = await _reviewService.GetReviewsAsync(id);
             NotifyListChanged(CurrentUserReviews, EventArgs.Empty);
         }
 
@@ -46,11 +48,10 @@ namespace CourseProject.Services
             NotifyListChanged(Users, EventArgs.Empty);
         }
 
-        public async Task DeleteReviewAsync(Review review)
+        public async Task DeleteReviewAsync(Review review, string userId)
         {
             await _reviewService.DeleteReview(review);
-            await GetReviewsAsync();
-            await GetUserReviewsAsync();
+            await GetUserReviewsAsync(userId);
         }
 
         public async Task UpdateUserRating(int workId, int rating)
@@ -64,16 +65,16 @@ namespace CourseProject.Services
             NotifyListChanged(Comments, EventArgs.Empty);
         }
 
-        public async Task GetTagsAsync()
-        {
-            Tags = await _reviewService.GetTags();
-            NotifyListChanged(Tags, EventArgs.Empty);
-        }
-
         public async Task GetCategoriesAsync()
         {
             Categories = await _reviewService.GetCategories();
             NotifyListChanged(Categories, EventArgs.Empty);
+        }
+
+        public async Task GetTagsAsync()
+        {
+            Tags = await _reviewService.GetTags();
+            NotifyListChanged(Tags, EventArgs.Empty);
         }
 
         public async Task<List<Tag>> FindTagsByValueAsync(string value)
@@ -81,9 +82,27 @@ namespace CourseProject.Services
             return await _reviewService.GetTagsByValue(value);
         }
 
-        public async Task GetWorksByCategoryAsync(int categoryId)
+        public async Task GetCurrentReviewTagsAsync(int reviewId)
         {
-            Works = await _reviewService.GetWorksByCategory(categoryId);
+            ReviewTags = await _reviewService.GetReviewTags(reviewId);
+            NotifyListChanged(ReviewTags, EventArgs.Empty);
+        }
+
+        public void AddTagToView(ReviewTag reviewTag)
+        {
+            ReviewTags!.Add(reviewTag);
+            NotifyListChanged(ReviewTags, EventArgs.Empty);
+        }
+
+        public async Task RemoveTagFromReviewAsync(int reviewId, string tagTitle)
+        {
+            await _reviewService.RemoveTagFromReview(reviewId, tagTitle);
+            NotifyListChanged(ReviewTags, EventArgs.Empty);
+        }
+
+        public async Task GetWorksByCategoryAsync(Category category)
+        {
+            Works = await _reviewService.GetWorksByCategory(category);
             NotifyListChanged(Works, EventArgs.Empty);
         }
 

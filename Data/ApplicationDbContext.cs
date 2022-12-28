@@ -17,6 +17,7 @@ namespace CourseProject.Data
         public DbSet<Comment> Comments { get; set; }
         public DbSet<Review> Reviews { get; set; }
         public DbSet<Tag> Tags { get; set; }
+        public DbSet<ReviewTag> ReviewTags { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Work> Works { get; set; }
         public DbSet<UserRating> UserRatings { get; set; }

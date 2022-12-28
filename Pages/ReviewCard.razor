@@ -12,10 +12,15 @@
         <MudText Typo="Typo.caption">Authors Rating: @Review.Work.OverallAuthorRating</MudText>
         <br />
         <MudText Typo="Typo.caption">Users Rating: @Review.Work.OverallUserRating</MudText>
+        <br />
+        <MudButton OnClick='() => NavigateTo("review", Review.Id)'>Open</MudButton>
     </MudCardContent>
 </MudCard>
 
 @code {
     [Parameter]
     public Review Review { get; set; } = default!;
+
+    private void NavigateTo(string page, int? reviewId = null)
+        => navigationManager.NavigateTo($"/{page}/{reviewId}");
 }

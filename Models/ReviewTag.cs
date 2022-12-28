@@ -6,5 +6,7 @@
         public int TagId { get; set; }
         public Review Review { get; set; } = default!;
         public Tag Tag { get; set; } = default!;
+        
+        public override string ToString() => Tag.Title;
     }
 }

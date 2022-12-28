@@ -1,10 +1,16 @@
 ﻿@page "/MyReviews"
+@page "/MyReviews/{userId}"
 @using CourseProject.Services
 @inject ViewService viewService
+@inject UserService userService
 @inject NavigationManager navigationManager
 
-<MudButton OnClick='() => NavigateTo("reviewform")' Variant="Variant.Filled">Write a review</MudButton>
-@if (viewService.CurrentUserReviews is null)
+<MudButton OnClick='() => NavigateTo("reviewform", 0)' Variant="Variant.Filled">Write a review</MudButton>
+@if (userId is null)
+{
+    <text>Log in first!</text>
+}
+else if (viewService.CurrentUserReviews is null)
 {
     <text>Loading...</text>
 }
@@ -39,7 +45,7 @@ else
             <MudTd DataLabel="Open"><MudIconButton Icon="@Icons.Material.Filled.OpenInNew" 
                 OnClick='() => NavigateTo("review", context.Id)'>Open</MudIconButton></MudTd>
             <MudTd DataLabel="Edit"><MudIconButton Icon="@Icons.Material.Filled.Edit" 
-                OnClick='() => NavigateTo("edit", context.Id)'></MudIconButton></MudTd>
+                OnClick='() => navigationManager.NavigateTo($"/ReviewForm/{context.Id}")'></MudIconButton></MudTd>
             <MudTd DataLabel="Delete"><MudIconButton Icon="@Icons.Material.Filled.Delete" 
                 OnClick="() => DeleteReview(context)"></MudIconButton></MudTd>
         </RowTemplate>
@@ -48,20 +54,26 @@ else
 
 @code {
     private string searchString = "";
-    
+    [Parameter]
+    public string userId { get; set; } = "";
+
     protected override async Task OnInitializedAsync()
     {
-        await viewService.GetUserReviewsAsync();
-        viewService.ListChanged += OnListChanged;
+        userId = await userService.GetCurrentUserId();
+        if (!string.IsNullOrEmpty(userId))
+        {
+            await viewService.GetUserReviewsAsync(userId);
+            viewService.ListChanged += OnListChanged;
+        }
     }
 
     private void OnListChanged(object? sender, EventArgs e)
         => this.InvokeAsync(this.StateHasChanged);
 
     private async Task DeleteReview(Review review)
-        => await viewService.DeleteReviewAsync(review);
+        => await viewService.DeleteReviewAsync(review, userId);
 
-    private void NavigateTo(string page, int? reviewId = null)
+    private void NavigateTo(string page, int reviewId)
         => navigationManager.NavigateTo($"/{page}/{reviewId}");
 
     private bool FilterFunc(Review review)
