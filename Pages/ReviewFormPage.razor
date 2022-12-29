@@ -19,7 +19,8 @@ else
                 <MudItem xs="12" sm="7">
                     <MudPaper Class="pa-4">
                         <MudForm>
-                            <MudSelect T="Category" Label="Category" Dense="true" Value="review.Work.Category" ValueChanged="SetCategory" Variant="Variant.Outlined" Disabled="IsEditing()">
+                            <MudSelect T="Category" Label="Category" Dense="true" Value="review.Work.Category" ValueChanged="SetCategory" 
+                                            Variant="Variant.Outlined" Disabled="IsEditing()">
                                 @foreach (var item in viewService.Categories!)
                                 {
                                     <MudSelectItem Value="@item"/>
@@ -62,21 +63,23 @@ else
     [Parameter]
     public int ReviewId { get; set; }
     private Review review = new();
-    //private Category category = default!;
-    //private Work work = default!;
     private string workTitle = "";
-    //private int rating;
     private string tagTitle = default!;
 
     protected override async Task OnInitializedAsync()
     {
+        await viewService.GetCategoriesAsync();
         if (ReviewId != 0)
         {
             review = await reviewService.GetReviewByIdAsync(ReviewId);
-            await viewService.GetCurrentReviewTagsAsync(ReviewId);
+            workTitle = review.Work.Title;
         }
-        workTitle = review.Work.Title;
-        await viewService.GetCategoriesAsync();
+        else
+        {
+            review.Work = new Work();
+            review.Work.Category = new Category();
+        }
+        await viewService.GetCurrentReviewTagsAsync(ReviewId);
     }
 
     private async Task PublishReviewAndRedirectToHome()
@@ -96,7 +99,6 @@ else
         review.UserId = await userService.GetCurrentUserId();
         if (review.ImageUrl is null)
             review.ImageUrl = DEFAULT_IMAGE;
-        SetReviewTags();
     }
 
     public void SetCategory(Category value)
@@ -106,25 +108,13 @@ else
 
     private async Task SetWorkData()
     {
-        review.Work = await reviewService.GetWorkByTitle(workTitle);
+        //review.Work = await reviewService.GetWorkByTitle(workTitle);
         if (!await reviewService.FindWorkByTitle(review.Work.Title))
         {
             //review.Work.CategoryId = review.Work.Category.Id;
             await reviewService.AddWork(review.Work);
         }
         else review.Work = await reviewService.GetWorkByTitle(review.Work.Title);
-    }
-
-    private Tag CreateTag(string title)
-        => new Tag { Title = title };
-
-    private async void SetReviewTags()
-    {
-        //review.TagsLink = new List<ReviewTag>();
-        foreach (var t in viewService.ReviewTags!)
-        {
-            await reviewService.AddTagToReview(t);
-        }
     }
 
     private async Task AddTag()
@@ -134,20 +124,20 @@ else
         {
             if (!await reviewService.FindTagByTitle(tagTitle))
             {
-                t = CreateTag(tagTitle);
+                t = new Tag { Title = tagTitle };
                 await reviewService.AddTag(t);
             }
-            else
+            else 
             {
                 t = await reviewService.GetTagByTitle(tagTitle);
-                viewService.AddTagToView(new ReviewTag
-                    {
-                        TagId = t.Id,
-                        ReviewId = ReviewId
-                    });
             }
+            await viewService.AddTagToReview(new ReviewTag
+                {
+                    TagId = t.Id,
+                    ReviewId = ReviewId
+                });
+            tagTitle = "";
         }
-        tagTitle = "";
     }
 
     private async Task RemoveTag(MudChip chip)

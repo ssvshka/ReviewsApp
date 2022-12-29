@@ -25,5 +25,6 @@ namespace CourseProject.Models
         public Work Work { get; set; } = default!;
         public ICollection<ReviewTag> TagsLink { get; set; } = default!;
         public ICollection<Comment> Comments { get; set; } = default!;
+        public ICollection<Like>? Likes { get; set; }
     }
 }

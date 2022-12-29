@@ -88,8 +88,9 @@ namespace CourseProject.Services
             NotifyListChanged(ReviewTags, EventArgs.Empty);
         }
 
-        public void AddTagToView(ReviewTag reviewTag)
+        public async Task AddTagToReview(ReviewTag reviewTag)
         {
+            await _reviewService.AddTagToReview(reviewTag);
             ReviewTags!.Add(reviewTag);
             NotifyListChanged(ReviewTags, EventArgs.Empty);
         }

@@ -33,7 +33,7 @@ namespace CourseProject.Services
         public async Task AddReview(Review review)
         {
             using var ctx = _dbContextFactory.CreateDbContext();
-            ctx.Reviews.Add(review);
+            ctx.Reviews.Attach(review);
             await ctx.SaveChangesAsync();
         }
         public async Task EditReview(Review review)

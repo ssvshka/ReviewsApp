@@ -20,7 +20,8 @@ namespace CourseProject.Data
         public DbSet<ReviewTag> ReviewTags { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Work> Works { get; set; }
-        public DbSet<UserRating> UserRatings { get; set; }
+        public DbSet<Like> Likes { get; set; }
+        public DbSet<UserRating> UserRatings { get; set; } 
         
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -28,6 +29,16 @@ namespace CourseProject.Data
 
             builder.Entity<ReviewTag>()
                  .HasKey(x => new { x.ReviewId, x.TagId });
+
+            builder.Entity<Like>()
+                .HasOne(l => l.User)
+                .WithMany(u => u.Likes)
+                .HasForeignKey(l => l.UserId);
+
+            builder.Entity<Like>()
+                .HasOne(l => l.Review)
+                .WithMany(r => r.Likes)
+                .HasForeignKey(l => l.ReviewId);
 
             builder.Entity<Review>()
                 .Property(e => e.ImageUrl)

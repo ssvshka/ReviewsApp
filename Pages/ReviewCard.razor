@@ -1,4 +1,5 @@
 ﻿@inject ViewService viewService
+@inject UserService userService
 @inject NavigationManager navigationManager
 
 <MudCard>
@@ -7,11 +8,20 @@
         <MudText Typo="Typo.h5">@Review.Title</MudText>
         <MudMarkdown Value="@Review.Text" />
         <MudText Typo="Typo.caption">Posted by @Review.User.Email</MudText>
-        <MudText Typo="Typo.caption">on @Review.PostedOn.ToString("dd/MM/yyyy HH:mm")</MudText>
         <br />
+        <MudText Typo="Typo.caption"></MudText>
+        <div class="d-flex flex-column align-left">
+            <AuthorizeView>
+                <MudRating MaxValue="1" SelectedValue="selectedValue" @onclick="Like" 
+                    FullIcon="@Icons.Material.Filled.ThumbUp" EmptyIcon="@Icons.Material.Outlined.ThumbUp" />
+            </AuthorizeView>
+            <MudText Typo="Typo.caption">Likes: @likesAmount</MudText>
+        </div>
         <MudText Typo="Typo.caption">Authors Rating: @Review.Work.OverallAuthorRating</MudText>
         <br />
         <MudText Typo="Typo.caption">Users Rating: @Review.Work.OverallUserRating</MudText>
+        <br />
+        <MudText Typo="Typo.caption">@Review.PostedOn.ToString("dd/MM/yyyy HH:mm")</MudText>
         <br />
         <MudButton OnClick='() => NavigateTo("review", Review.Id)'>Open</MudButton>
     </MudCardContent>
@@ -20,7 +30,33 @@
 @code {
     [Parameter]
     public Review Review { get; set; } = default!;
+    private int selectedValue;
+    private int likesAmount;
+
+    protected override async Task OnInitializedAsync()
+    {
+        selectedValue = await userService.IsReviewLiked(Review.UserId, Review.Id) ? 1 : 0;
+        likesAmount = await userService.GetUserLikesAmount(Review.UserId);
+    }
 
     private void NavigateTo(string page, int? reviewId = null)
         => navigationManager.NavigateTo($"/{page}/{reviewId}");
+
+    private async Task Like()
+    {
+        if(selectedValue == 0)
+        {
+            await userService.AddLike(new Like
+                {
+                    ReviewId = Review.Id,
+                    UserId = Review.UserId
+                });
+            selectedValue = 1;
+        }
+        else
+        {    
+            await userService.RemoveLike(Review.UserId, Review.Id);
+            selectedValue = 0;
+        }
+    }
 }
