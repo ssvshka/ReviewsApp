@@ -12,8 +12,7 @@
         <LoginDisplay/>
         <MudSpacer />
         <SearchComponent />
-        <MudSwitch @bind-value="_isDarkMode" CheckedChanged="SetTheme" Color="Color.Inherit" Class="ma-4" T="bool" />
-        <MudIcon Icon="@GetIcon()" />
+        <MudToggleIconButton ToggledChanged="SetTheme" Icon="@GetIcon()" ToggledIcon="@GetIcon()" />
     </MudAppBar>
     <MudDrawer @bind-Open="@_drawerOpen">
         <MyNavMenu/>
@@ -38,10 +37,11 @@
         }
     }
 
-    private async Task SetTheme()
+    private async Task<bool> SetTheme()
     {
         _isDarkMode = !_isDarkMode;
         await ProtectedSessionStore.SetAsync("isDarkMode", _isDarkMode);
+        return _isDarkMode;
     }
 
     private void DrawerToggle()
