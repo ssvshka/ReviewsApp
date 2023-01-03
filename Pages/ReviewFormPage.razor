@@ -88,14 +88,17 @@ else
         if (ReviewId == 0)
             await reviewService.AddReview(review);
         else await reviewService.EditReview(review);
+        await reviewService.CalculateAuthorRating(review.Work.Title);
         navigationManager.NavigateTo("/");
     }
 
     private async Task SetReviewData()
     {
         await SetWorkData();
-        await reviewService.CalculateAuthorRating(review.Work.Id, review.Rating);
-        review.PostedOn = DateTime.Now;
+        if (ReviewId == 0)
+            review.PostedOn = DateTime.Now;
+        else
+            review.EditedOn = DateTime.Now;
         review.UserId = await userService.GetCurrentUserId();
         if (review.ImageUrl is null)
             review.ImageUrl = DEFAULT_IMAGE;

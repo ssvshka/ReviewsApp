@@ -4,6 +4,7 @@ using CourseProject.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CourseProject.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20221229174417_adddedEditedOnProp")]
+    partial class adddedEditedOnProp
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -101,10 +104,6 @@ namespace CourseProject.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("LikedUserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("ReviewId")
                         .HasColumnType("int");
@@ -227,27 +226,15 @@ namespace CourseProject.Migrations
 
             modelBuilder.Entity("CourseProject.Models.UserRating", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
                     b.Property<int>("Rating")
                         .HasColumnType("int");
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("WorkId")
                         .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("WorkId");
 
                     b.ToTable("UserRatings");
                 });
@@ -261,6 +248,9 @@ namespace CourseProject.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("GradeAmount")
                         .HasColumnType("int");
 
                     b.Property<decimal>("OverallAuthorRating")
@@ -285,6 +275,7 @@ namespace CourseProject.Migrations
                         {
                             Id = 1,
                             CategoryId = 1,
+                            GradeAmount = 0,
                             OverallAuthorRating = 0m,
                             OverallUserRating = 0m,
                             Title = "Cars"
@@ -584,25 +575,6 @@ namespace CourseProject.Migrations
                     b.Navigation("Tag");
                 });
 
-            modelBuilder.Entity("CourseProject.Models.UserRating", b =>
-                {
-                    b.HasOne("CourseProject.Models.User", "User")
-                        .WithMany("UserRatings")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("CourseProject.Models.Work", "Work")
-                        .WithMany("UserRatings")
-                        .HasForeignKey("WorkId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-
-                    b.Navigation("Work");
-                });
-
             modelBuilder.Entity("CourseProject.Models.Work", b =>
                 {
                     b.HasOne("CourseProject.Models.Category", "Category")
@@ -687,8 +659,6 @@ namespace CourseProject.Migrations
             modelBuilder.Entity("CourseProject.Models.Work", b =>
                 {
                     b.Navigation("Reviews");
-
-                    b.Navigation("UserRatings");
                 });
 
             modelBuilder.Entity("CourseProject.Models.User", b =>
@@ -698,8 +668,6 @@ namespace CourseProject.Migrations
                     b.Navigation("Likes");
 
                     b.Navigation("Reviews");
-
-                    b.Navigation("UserRatings");
                 });
 #pragma warning restore 612, 618
         }

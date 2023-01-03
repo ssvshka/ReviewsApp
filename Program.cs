@@ -20,6 +20,7 @@ builder.Services.AddScoped<ReviewService>();
 builder.Services.AddScoped<ViewService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<AzureStorageHelper>();   
+builder.Services.AddScoped<SearchService>();
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddDefaultIdentity<User>(options =>
 {

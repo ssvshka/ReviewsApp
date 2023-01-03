@@ -1,4 +1,5 @@
-﻿using CourseProject.Data;
+﻿using CloudinaryDotNet.Actions;
+using CourseProject.Data;
 using CourseProject.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -98,8 +99,7 @@ namespace CourseProject.Services
         {
             using var ctx = _dbContextFactory.CreateDbContext();
             return await ctx.Works
-                .Where(w => w.Title == title)
-                .AnyAsync();
+                .AnyAsync(w => w.Title == title);
         }
 
         public async Task<Work> GetWorkByTitle(string title)
@@ -111,33 +111,54 @@ namespace CourseProject.Services
                 .SingleAsync();
         }
 
-        public async Task CalculateAuthorRating(int workId, int rating)
+        public async Task CalculateAuthorRating(string workTitle)
         {
             using var ctx = _dbContextFactory.CreateDbContext();
-            var c = GetReviewsNumber(workId, ctx);
-            ctx.Works
-                .Single(w => w.Id == workId)
-                .OverallAuthorRating += rating / (c + 1);
+            var w = await GetWorkByTitle(workTitle);
+            w.OverallAuthorRating = await ctx.Reviews
+                .Where(r => r.Title == workTitle)
+                .AverageAsync(r => r.Rating);
+            ctx.Update(w);
             await ctx.SaveChangesAsync();
         }
 
-        public async Task CalculateUserRating(int workId, int rating)
+        public async Task SetUserRating(UserRating userRating)
         {
             using var ctx = _dbContextFactory.CreateDbContext();
-            
-            var g = ctx.Works
-                .Single(w => w.Id == workId)
-                .GradeAmount;
-            ctx.Works
-                .Single(w => w.Id == workId)
-                .OverallUserRating += rating / (g + 1);
+            await ctx.UserRatings.AddAsync(userRating);
             await ctx.SaveChangesAsync();
         }
 
-        private static int GetReviewsNumber(int workId, ApplicationDbContext ctx)
-            => ctx.Reviews
-                .Where(w => w.WorkId == workId)
-                .Count();
+        public async Task<int> GetUserRating(string userId, int workId)
+        {
+            using var ctx = _dbContextFactory.CreateDbContext();
+            var u = await ctx.UserRatings
+                .Where(u => u.UserId == userId)
+                .FirstOrDefaultAsync(u => u.WorkId == workId);
+            return u == null ? 0 : u.Rating;
+        }
+        public async Task UpdateOverallUserRating(int workId)
+        {
+            using var ctx = _dbContextFactory.CreateDbContext();
+            var w = await ctx.Works
+                .SingleAsync(w => w.Id == workId);
+            w.OverallUserRating = await ctx.UserRatings
+                .Where(u => u.WorkId == workId)
+                .AverageAsync(u => u.Rating);
+            ctx.Update(w);
+            await ctx.SaveChangesAsync();
+        }
+
+        public async Task UpdateUserRating(string userId, int workId, int value)
+        {
+            using var ctx = _dbContextFactory.CreateDbContext();
+            var u = await ctx.UserRatings
+                .Where(u => u.UserId == userId)
+                .SingleAsync(u=> u.WorkId == workId);
+            u.Rating = value;
+            ctx.Update(u);
+            await ctx.SaveChangesAsync();
+        }
 
         public async Task AddTag(Tag tag)
         {
@@ -241,21 +262,6 @@ namespace CourseProject.Services
                 .Where(w => w.ReviewId == reviewId)
                 .SingleAsync(w => w.Tag.Title == tagTitle);
             ctx.ReviewTags.Remove(t!);
-            await ctx.SaveChangesAsync();
-        }
-
-        /// <summary>
-        /// These are quite useless methods
-        /// </summary>
-        /// <param name="title"></param>
-        /// <returns></returns>
-        public async Task DeleteTag(string title)
-        {
-            using var ctx = _dbContextFactory.CreateDbContext();
-            var t = await ctx.Tags
-                .Where(w => w.Title == title)
-                .FirstOrDefaultAsync();
-            ctx.Tags.Remove(t!);
             await ctx.SaveChangesAsync();
         }
     }

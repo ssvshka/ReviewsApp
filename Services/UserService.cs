@@ -40,14 +40,6 @@ namespace CourseProject.Services
             return user.FindFirst(u => u.Type.Contains("nameidentifier"))?.Value!;
         }
 
-        public async Task UpdateLikeAmount(string userId, int value)
-        {
-            using var ctx = _dbContextFactory.CreateDbContext();
-            var user = await ctx.Users.SingleAsync(u => u.Id == userId);
-            ctx.Update(user);
-            await ctx.SaveChangesAsync();
-        }
-
         public async Task AddLike(Like like)
         {
             using var ctx = _dbContextFactory.CreateDbContext();
@@ -67,21 +59,15 @@ namespace CourseProject.Services
             using var ctx = _dbContextFactory.CreateDbContext();
             return await ctx.Likes
                 .Where(l => l.UserId == userId)
-                .AnyAsync(l => l.ReviewId == reviewId);
+                .Where(l => l.ReviewId == reviewId)
+                .AnyAsync();
         }
 
         public async Task<int> GetUserLikesAmount(string userId)
         {
             using var ctx = _dbContextFactory.CreateDbContext();
-            return await ctx.Likes.CountAsync(l => l.UserId == userId);
+            return await ctx.Likes.CountAsync(l => l.LikedUserId == userId);
         }
-
-        //public void DeleteLikes()
-        //{
-        //    using var ctx = _dbContextFactory.CreateDbContext();
-        //    ctx.Database.ExecuteSqlRaw("TRUNCATE TABLE [Likes]");
-        //    ctx.SaveChanges();
-        //}
 
         private static async Task<Like> GetLike(string userId, int reviewId, ApplicationDbContext ctx)
             => await ctx.Likes

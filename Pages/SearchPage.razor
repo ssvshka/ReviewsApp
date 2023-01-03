@@ -1,0 +1,31 @@
+﻿@inject SearchService searchService
+@page "/Search/{searchedText}"
+
+@if(reviews.Count < 1)
+{
+    <MudText>No results found!</MudText>
+}
+else
+{
+    <MudTable Items="reviews">
+        <RowTemplate>
+            <MudTd><MudLink Href="@($"/Review/{context.Id}")">@context.Title</MudLink></MudTd>
+            <MudTd><MudMarkdown Value="@GetTextPart(context.Text)" /></MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+
+@code {
+    [Parameter]
+    public string? searchedText { get; set; }
+    private List<Review> reviews = new();
+
+    protected override async Task OnParametersSetAsync()
+        => reviews = await SetReviews();
+
+    private async Task<List<Review>> SetReviews()
+        => await searchService.Search(searchedText!);
+
+    private string GetTextPart(string text)
+        => $"{text.Substring(0, 50)}...";
+}

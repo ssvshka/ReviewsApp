@@ -1,16 +1,19 @@
-﻿@inherits LayoutComponentBase
+﻿@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inject ProtectedSessionStorage ProtectedSessionStore
+@inherits LayoutComponentBase
 
-<MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="_theme"/>
+<MudThemeProvider Theme="_theme" @bind-IsDarkMode="@_isDarkMode" />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
 <MudLayout>
     <MudAppBar>
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-            ReviewCulture
-        <LoginDisplay></LoginDisplay>
-        <MudSwitch @bind-Checked="@_isDarkMode" Color="Color.Primary" Class="ma-4" T="bool" />
-        <MudIcon Icon="@Icons.Material.Filled.Nightlight" />
+        <LoginDisplay/>
+        <MudSpacer />
+        <SearchComponent />
+        <MudSwitch @bind-value="_isDarkMode" CheckedChanged="SetTheme" Color="Color.Inherit" Class="ma-4" T="bool" />
+        <MudIcon Icon="@GetIcon()" />
     </MudAppBar>
     <MudDrawer @bind-Open="@_drawerOpen">
         <MyNavMenu/>
@@ -22,11 +25,28 @@
 
 @code {
     private bool _drawerOpen = true;
-    private MudTheme _theme = new();
     private bool _isDarkMode;
-   
-    private void DrawerToggle()
+    private MudTheme _theme = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        _drawerOpen = !_drawerOpen;
+        if (firstRender)
+        {
+            var result = await ProtectedSessionStore.GetAsync<bool>("isDarkMode");
+            _isDarkMode = result.Success ? result.Value : false;
+            StateHasChanged();
+        }
     }
+
+    private async Task SetTheme()
+    {
+        _isDarkMode = !_isDarkMode;
+        await ProtectedSessionStore.SetAsync("isDarkMode", _isDarkMode);
+    }
+
+    private void DrawerToggle()
+        => _drawerOpen = !_drawerOpen;
+
+    private string GetIcon()
+        => _isDarkMode ? Icons.Material.Filled.WbSunny : Icons.Material.Filled.Nightlight;
 }

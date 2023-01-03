@@ -1,29 +1,28 @@
 ﻿@inject ViewService viewService
 @inject UserService userService
+@inject ReviewService reviewService
 @inject NavigationManager navigationManager
+@inject ISnackbar Snackbar
 
 <MudCard>
     <MudCardMedia Image=@Review.ImageUrl />
     <MudCardContent>
         <MudText Typo="Typo.h5">@Review.Title</MudText>
         <MudMarkdown Value="@Review.Text" />
-        <MudText Typo="Typo.caption">Posted by @Review.User.Email</MudText>
-        <br />
-        <MudText Typo="Typo.caption"></MudText>
         <div class="d-flex flex-column align-left">
+            <MudText Typo="Typo.caption">Posted by @Review.User.Email</MudText>
             <AuthorizeView>
                 <MudRating MaxValue="1" SelectedValue="selectedValue" @onclick="Like" 
                     FullIcon="@Icons.Material.Filled.ThumbUp" EmptyIcon="@Icons.Material.Outlined.ThumbUp" />
+                <MudRating SelectedValueChanged="SetRating"
+                           @onclick='() => Snackbar.Add("Your vote is taken!")' />
             </AuthorizeView>
             <MudText Typo="Typo.caption">Likes: @likesAmount</MudText>
+            <MudText Typo="Typo.caption">Authors Rating: @Review.Work.OverallAuthorRating</MudText>
+            <MudText Typo="Typo.caption">Users Rating: @Review.Work.OverallUserRating</MudText>
+            <MudText Typo="Typo.caption">@Review.PostedOn.ToString("dd/MM/yyyy HH:mm")</MudText>
+            <MudButton OnClick='() => NavigateTo("review", Review.Id)'>Open</MudButton>
         </div>
-        <MudText Typo="Typo.caption">Authors Rating: @Review.Work.OverallAuthorRating</MudText>
-        <br />
-        <MudText Typo="Typo.caption">Users Rating: @Review.Work.OverallUserRating</MudText>
-        <br />
-        <MudText Typo="Typo.caption">@Review.PostedOn.ToString("dd/MM/yyyy HH:mm")</MudText>
-        <br />
-        <MudButton OnClick='() => NavigateTo("review", Review.Id)'>Open</MudButton>
     </MudCardContent>
 </MudCard>
 
@@ -32,11 +31,15 @@
     public Review Review { get; set; } = default!;
     private int selectedValue;
     private int likesAmount;
+    private string currentUserId = default!;
+    private int rating;
 
     protected override async Task OnInitializedAsync()
     {
-        selectedValue = await userService.IsReviewLiked(Review.UserId, Review.Id) ? 1 : 0;
+        currentUserId = await userService.GetCurrentUserId();
+        selectedValue = await userService.IsReviewLiked(currentUserId, Review.Id) ? 1 : 0;
         likesAmount = await userService.GetUserLikesAmount(Review.UserId);
+        rating = await reviewService.GetUserRating(currentUserId, Review.WorkId);
     }
 
     private void NavigateTo(string page, int? reviewId = null)
@@ -49,14 +52,38 @@
             await userService.AddLike(new Like
                 {
                     ReviewId = Review.Id,
-                    UserId = Review.UserId
+                    UserId = currentUserId,
+                    LikedUserId = Review.UserId
                 });
             selectedValue = 1;
+            likesAmount++; 
         }
         else
         {    
-            await userService.RemoveLike(Review.UserId, Review.Id);
+            await userService.RemoveLike(currentUserId!, Review.Id);
             selectedValue = 0;
+            likesAmount--;
         }
+    }
+
+    private async Task SetRating(int value)
+    {
+        if (rating == 0)
+        {
+            await reviewService.SetUserRating(new UserRating
+            {
+                Rating = value,
+                UserId = currentUserId,
+                WorkId = Review.WorkId
+            });
+            rating = value;
+        }
+
+        else
+        {
+            await reviewService.UpdateUserRating(currentUserId, Review.WorkId, value);
+            rating = value;
+        }
+        await reviewService.UpdateOverallUserRating(Review.WorkId);
     }
 }

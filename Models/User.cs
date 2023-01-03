@@ -8,6 +8,7 @@ namespace CourseProject.Models
     {
         public ICollection<Review>? Reviews { get; set; }
         public ICollection<Comment>? Comments { get; set; }
-        public ICollection<Like>? Likes { get; set; }
+        public ICollection<Like> Likes { get; set; } = new List<Like>();
+        public ICollection<UserRating>? UserRatings { get; set; }
     }
 }

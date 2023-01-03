@@ -40,6 +40,16 @@ namespace CourseProject.Data
                 .WithMany(r => r.Likes)
                 .HasForeignKey(l => l.ReviewId);
 
+            builder.Entity<UserRating>()
+                .HasOne(u => u.User)
+                .WithMany(u => u.UserRatings)
+                .HasForeignKey(u => u.UserId);
+
+            builder.Entity<UserRating>()
+                .HasOne(u => u.Work)
+                .WithMany(w => w.UserRatings)
+                .HasForeignKey(u => u.WorkId);
+
             builder.Entity<Review>()
                 .Property(e => e.ImageUrl)
                 .IsUnicode(false);
@@ -56,8 +66,6 @@ namespace CourseProject.Data
                 new Tag { Id = 4, Title = "Short" });
             builder.Entity<Work>()
                 .HasData(new Work { Id = 1, Title = "Cars", CategoryId = 1 });
-            builder.Entity<UserRating>()
-                .HasNoKey();
         }
     }
 }

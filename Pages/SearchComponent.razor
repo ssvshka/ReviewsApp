@@ -1,0 +1,22 @@
+﻿@inject NavigationManager navigationManager
+
+<MudTextField @bind-Value="searchedText" Label="Search" Variant="Variant.Filled" Adornment="Adornment.End" 
+    AdornmentIcon="@Icons.Material.Filled.Search" OnAdornmentClick="NavigateToSearchResultsPage" OnKeyUp="NavigateToSearchResultsPageWithEnter" />
+
+@code {
+    [Parameter]
+    public string? searchedText { get; set; }
+
+    private void NavigateToSearchResultsPageWithEnter(KeyboardEventArgs e)
+    {
+        if (!string.IsNullOrEmpty(searchedText))
+            if (e.Code == "Enter" || e.Code == "NumpadEnter")
+                navigationManager.NavigateTo($"/Search/{searchedText}");
+    }
+
+    private void NavigateToSearchResultsPage()
+    {
+        if (!string.IsNullOrEmpty(searchedText))
+            navigationManager.NavigateTo($"/Search/{searchedText}");
+    }
+}

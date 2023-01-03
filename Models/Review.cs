@@ -16,6 +16,7 @@ namespace CourseProject.Models
         public string Text { get; set; } = default!;
         public string? ImageUrl { get; set; }
         public DateTime PostedOn { get; set; } = default;
+        public DateTime EditedOn { get; set; } = default!;
         public int Rating { get; set; }
         [ForeignKey("User")]
         [MaxLength(450)]

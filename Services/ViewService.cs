@@ -54,11 +54,6 @@ namespace CourseProject.Services
             await GetUserReviewsAsync(userId);
         }
 
-        public async Task UpdateUserRating(int workId, int rating)
-        {
-            await _reviewService.CalculateUserRating(workId, rating);
-        }
-
         public async Task GetCommentsAsync(int reviewId)
         {
             Comments = await _reviewService.GetReviewComments(reviewId);
