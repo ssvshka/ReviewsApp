@@ -1,12 +1,13 @@
 ﻿@page "/Admin"
 @using CourseProject.Services
 @inject ViewService viewService
+@inject IStringLocalizer<App> Localizer
 
 <MudTable Items="@viewService.Users">
     <HeaderContent>
         <MudTh>Id</MudTh>
-        <MudTh>Name</MudTh>
-        <MudTh>Review</MudTh>
+        <MudTh>@Localizer["Name"]</MudTh>
+        <MudTh>@Localizer["Review"]</MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="Id">@context.Id</MudTd>

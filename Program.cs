@@ -15,6 +15,15 @@ var config = builder.Configuration;
 var cs = config.GetConnectionString("DefaultConnection");
 var apiSecret = config["AccountSettings:ApiSecret"];
 
+var cultures = config.GetSection("Cultures")
+    .GetChildren().ToDictionary(x => x.Key, x => x.Value);
+var supportedCultures = cultures.Keys.ToArray();
+var localizationOptions = new RequestLocalizationOptions()
+    .AddSupportedCultures(supportedCultures)
+    .AddSupportedUICultures(supportedCultures);
+
+//IronPdf.License.LicenseKey = "IRONPDF.SERGEISHUBOCHKIN.3660-48D6B91B07-BZJ2WUSP5JFCEUD-RDYNUVC3NTZH-WQNEY4KZVAKI-U67JJZER4CK7-LIPERHVSSPFH-XPUAQO-TZKTJXQIJUSIUA-DEPLOYMENT.TRIAL-LRDUOM.TRIAL.EXPIRES.03.FEB.2023";
+
 builder.Services.AddDbContextFactory<ApplicationDbContext>(options => options.UseSqlServer(cs));
 builder.Services.AddScoped<ReviewService>();
 builder.Services.AddScoped<ViewService>();
@@ -42,6 +51,7 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<User>>();
 builder.Services.AddMudServices();
 builder.Services.AddMudMarkdownServices();
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 builder.Services.AddAuthentication()
   .AddGoogle(googleOptions =>
 {
@@ -78,6 +88,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseResponseCompression();
+
+app.UseRequestLocalization(localizationOptions);
 
 app.UseRouting();
 

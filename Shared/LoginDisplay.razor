@@ -1,14 +1,16 @@
-﻿<AuthorizeView>
+﻿@inject IStringLocalizer<App> Localizer
+
+<AuthorizeView>
     <Authorized>
-        <MudText Class="mr-4">Hello, @context.User.Identity?.Name!</MudText>
+        <MudText Class="mr-4">@context.User.Identity?.Name</MudText>
         <form method="post" action="Identity/Account/Logout">
-            <button type="submit" class="nav-link btn btn-link">Log out</button>
+            <button type="submit" class="nav-link btn btn-link">@Localizer["Log out"]</button>
         </form>
     </Authorized>
     <NotAuthorized>
         <div>
-            <MudLink Color="Color.Inherit" Href="/Login" Class="mr-4">Login</MudLink>
-            <MudLink Color="Color.Inherit" Href="Identity/Account/Register">Register</MudLink>
+            <MudLink Color="Color.Inherit" Href="/Login" Class="mr-4">@Localizer["Login"]</MudLink>
+            <MudLink Color="Color.Inherit" Href="Identity/Account/Register">@Localizer["Register"]</MudLink>
         </div>
     </NotAuthorized>
 </AuthorizeView>

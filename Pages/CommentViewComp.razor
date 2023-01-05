@@ -1,7 +1,7 @@
 ﻿<MudCard Outlined="true">
     <MudCardHeader>
         <CardHeaderContent>
-            <MudField Margin="Margin.Dense" Variant="Variant.Outlined">@Comment.User.Email wrote on @Comment.LeftOn</MudField>
+            <MudField Margin="Margin.Dense" Variant="Variant.Outlined">@Comment.User.Email @Comment.LeftOn.ToShortDateString()</MudField>
         </CardHeaderContent>
     </MudCardHeader>
     <MudCardContent>

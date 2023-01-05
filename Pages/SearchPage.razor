@@ -1,9 +1,10 @@
 ﻿@inject SearchService searchService
 @page "/Search/{searchedText}"
+@inject IStringLocalizer<App> Localizer
 
 @if(reviews.Count < 1)
 {
-    <MudText>No results found!</MudText>
+    <MudText>@Localizer["No results found!"]</MudText>
 }
 else
 {

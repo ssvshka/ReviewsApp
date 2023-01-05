@@ -1,27 +1,35 @@
 ﻿@page "/AllReviews"
 @using CourseProject.Services
 @inject ViewService viewService
+@inject UserService userService
+@inject IStringLocalizer<App> Localizer
 
 @if (viewService.Reviews is null)
 {
-    <text>Loading...</text>
+    <text>@Localizer["Loading"]...</text>
 }
 else
 {
     <MudTabs Elevation="2" ApplyEffectsToContainer="true" PanelClass="pa-6">
-        <MudTabPanel OnClick="GetReviews" Text="New" />
-        <MudTabPanel OnClick="viewService.OrderReviewsByRating" Text="Most Rated" />
+        <MudTabPanel OnClick="GetReviews" Text="@Localizer["New"]" />
+        <MudTabPanel OnClick="viewService.OrderReviewsByRating" Text="@Localizer["Most Rated"]" />
     </MudTabs>
     
     @foreach (var r in viewService.Reviews!)
     {
-        <ReviewCard Review="@r" />
+        if (r.Id != 35)
+        {
+            <ReviewCard Review="@r" CurrentUserId="@CurrentUserId"/>    
+        }
     }
 }
 
 @code {
+    public string CurrentUserId { get; set; } = default!;
+
     protected override async Task OnInitializedAsync()
     {
+        CurrentUserId = await userService.GetCurrentUserId();
         await GetReviews();
         viewService.ListChanged += OnListChanged;
     }

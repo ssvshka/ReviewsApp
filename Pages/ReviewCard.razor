@@ -1,4 +1,5 @@
-﻿@inject ViewService viewService
+﻿@inject IStringLocalizer<App> Localizer
+@inject ViewService viewService
 @inject UserService userService
 @inject ReviewService reviewService
 @inject NavigationManager navigationManager
@@ -10,18 +11,18 @@
         <MudText Typo="Typo.h5">@Review.Title</MudText>
         <MudMarkdown Value="@Review.Text" />
         <div class="d-flex flex-column align-left">
-            <MudText Typo="Typo.caption">Posted by @Review.User.Email</MudText>
+            <MudText Typo="Typo.caption">@Localizer["Posted by"] @Review.User.Email</MudText>
             <AuthorizeView>
                 <MudRating MaxValue="1" SelectedValue="selectedValue" @onclick="Like" 
                     FullIcon="@Icons.Material.Filled.ThumbUp" EmptyIcon="@Icons.Material.Outlined.ThumbUp" />
                 <MudRating SelectedValueChanged="SetRating"
                            @onclick='() => Snackbar.Add("Your vote is taken!")' />
             </AuthorizeView>
-            <MudText Typo="Typo.caption">Likes: @likesAmount</MudText>
-            <MudText Typo="Typo.caption">Authors Rating: @Review.Work.OverallAuthorRating</MudText>
-            <MudText Typo="Typo.caption">Users Rating: @Review.Work.OverallUserRating</MudText>
-            <MudText Typo="Typo.caption">@Review.PostedOn.ToString("dd/MM/yyyy HH:mm")</MudText>
-            <MudButton OnClick='() => NavigateTo("review", Review.Id)'>Open</MudButton>
+            <MudText Typo="Typo.caption">@Localizer["Likes"]: @likesAmount</MudText>
+            <MudText Typo="Typo.caption">@Localizer["Authors Rating"]: @Review.Work.OverallAuthorRating</MudText>
+            <MudText Typo="Typo.caption">@Localizer["Users Rating"]: @Review.Work.OverallUserRating</MudText>
+            <MudText Typo="Typo.caption">@Review.PostedOn.ToShortDateString()</MudText>
+            <MudButton OnClick='() => NavigateTo("review", Review.Id)'>@Localizer["Open"]</MudButton>
         </div>
     </MudCardContent>
 </MudCard>
@@ -29,17 +30,17 @@
 @code {
     [Parameter]
     public Review Review { get; set; } = default!;
+    [Parameter]
+    public string CurrentUserId { get; set; } = default!;
     private int selectedValue;
     private int likesAmount;
-    private string currentUserId = default!;
     private int rating;
 
     protected override async Task OnInitializedAsync()
     {
-        currentUserId = await userService.GetCurrentUserId();
-        selectedValue = await userService.IsReviewLiked(currentUserId, Review.Id) ? 1 : 0;
+        selectedValue = await userService.IsReviewLiked(CurrentUserId, Review.Id) ? 1 : 0;
         likesAmount = await userService.GetUserLikesAmount(Review.UserId);
-        rating = await reviewService.GetUserRating(currentUserId, Review.WorkId);
+        rating = await reviewService.GetUserRating(CurrentUserId, Review.WorkId);
     }
 
     private void NavigateTo(string page, int? reviewId = null)
@@ -47,12 +48,12 @@
 
     private async Task Like()
     {
-        if(selectedValue == 0)
+        if (selectedValue == 0)
         {
             await userService.AddLike(new Like
                 {
                     ReviewId = Review.Id,
-                    UserId = currentUserId,
+                    UserId = CurrentUserId,
                     LikedUserId = Review.UserId
                 });
             selectedValue = 1;
@@ -60,7 +61,7 @@
         }
         else
         {    
-            await userService.RemoveLike(currentUserId!, Review.Id);
+            await userService.RemoveLike(CurrentUserId!, Review.Id);
             selectedValue = 0;
             likesAmount--;
         }
@@ -73,7 +74,7 @@
             await reviewService.SetUserRating(new UserRating
             {
                 Rating = value,
-                UserId = currentUserId,
+                UserId = CurrentUserId,
                 WorkId = Review.WorkId
             });
             rating = value;
@@ -81,7 +82,7 @@
 
         else
         {
-            await reviewService.UpdateUserRating(currentUserId, Review.WorkId, value);
+            await reviewService.UpdateUserRating(CurrentUserId, Review.WorkId, value);
             rating = value;
         }
         await reviewService.UpdateOverallUserRating(Review.WorkId);

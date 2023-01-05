@@ -1,6 +1,7 @@
 ﻿@inject NavigationManager navigationManager
+@inject IStringLocalizer<App> Localizer
 
-<MudTextField @bind-Value="searchedText" Label="Search" Variant="Variant.Filled" Adornment="Adornment.End" 
+<MudTextField @bind-Value="searchedText" Label="@Localizer["Search"]" Variant="Variant.Filled" Adornment="Adornment.End" 
     AdornmentIcon="@Icons.Material.Filled.Search" OnAdornmentClick="NavigateToSearchResultsPage" OnKeyUp="NavigateToSearchResultsPageWithEnter" />
 
 @code {

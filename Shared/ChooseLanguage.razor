@@ -1,0 +1,40 @@
+﻿@inject NavigationManager navigationManager
+@inject IConfiguration configuration
+
+@if (cultures != null)
+{
+    <div class="container">
+        <MudSelect T="string" Class="d-inline-flex pa-4" Value="selectedCulture" ValueChanged="RequestCultureChange">
+            @foreach (var culture in cultures)
+            {
+                <MudSelectItem Value="@culture.Key">@culture.Value</MudSelectItem>
+            }
+        </MudSelect>
+    </div>
+}
+
+@code {
+    private string selectedCulture = Thread.CurrentThread.CurrentUICulture.Name;
+    private Dictionary<string, string?> cultures = default!;
+
+    protected override void OnInitialized()
+    {
+        cultures = configuration.GetSection("Cultures")
+            .GetChildren().ToDictionary(x => x.Key, x => x.Value);
+    }
+
+    private void RequestCultureChange(string value)
+    {
+        if (string.IsNullOrWhiteSpace(selectedCulture))
+        {
+            return;
+        }
+        
+        selectedCulture = value;
+        var uri = new Uri(navigationManager.Uri)
+            .GetComponents(UriComponents.PathAndQuery, UriFormat.Unescaped);
+        var query = $"?culture={Uri.EscapeDataString(selectedCulture)}&" +
+            $"redirectUri={Uri.EscapeDataString(uri)}";
+        navigationManager.NavigateTo("/Culture/SetCulture" + query, forceLoad: true);
+    }
+}

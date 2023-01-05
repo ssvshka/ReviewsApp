@@ -4,37 +4,38 @@
 @inject ViewService viewService
 @inject UserService userService
 @inject NavigationManager navigationManager
+@inject IStringLocalizer<App> Localizer
 
 <MudButton OnClick='() => NavigateTo("reviewform", 0)' Variant="Variant.Filled">Write a review</MudButton>
 @if (userId is null)
 {
-    <text>Log in first!</text>
+    <text>@Localizer["Login first!"]</text>
 }
 else if (viewService.CurrentUserReviews is null)
 {
-    <text>Loading...</text>
+    <text>@Localizer["Loading"]...</text>
 }
 else if (!viewService.CurrentUserReviews.Any())
 {
-    <p>You dont have any reviews yet. Consider write one!</p>
+    <p>@Localizer["You dont have any reviews yet"]</p>
 }
 else
 {
     <MudTable Items="@viewService.CurrentUserReviews" Filter="new Func<Review,bool>(FilterFunc)">
         <ToolBarContent>
-            <MudText Typo="Typo.h6">Your reviews</MudText>
+            <MudText Typo="Typo.h6">@Localizer["Your reviews"]</MudText>
             <MudSpacer />
-            <MudTextField @bind-Value="searchString" Placeholder="Search by category, product or review title" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+            <MudTextField @bind-Value="searchString" Placeholder='@Localizer["Search"]' Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
         </ToolBarContent>
         <HeaderContent>
-            <MudTh><MudTableSortLabel SortBy="new Func<Review, object>(x=>x.Title)">Review Title</MudTableSortLabel></MudTh>
-            <MudTh><MudTableSortLabel SortBy="new Func<Review, object>(x=>x.Work.Category.Title)">Category</MudTableSortLabel></MudTh>
-            <MudTh><MudTableSortLabel SortBy="new Func<Review, object>(x=>x.Work.Title)">Product</MudTableSortLabel></MudTh>
-            <MudTh><MudTableSortLabel SortBy="new Func<Review, object>(x=>x.PostedOn)">Posted On</MudTableSortLabel></MudTh>
-            <MudTh><MudTableSortLabel SortBy="new Func<Review, object>(x=>x.Work.OverallAuthorRating)">Author Rating</MudTableSortLabel></MudTh>
-            <MudTh Style="text-align: start">Open</MudTh>
-            <MudTh Style="text-align: start">Edit</MudTh>
-            <MudTh Style="text-align: start">Delete</MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<Review, object>(x=>x.Title)">@Localizer["Review Title"]</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<Review, object>(x=>x.Work.Category.Title)">@Localizer["Category"]</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<Review, object>(x=>x.Work.Title)">@Localizer["Work"]</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<Review, object>(x=>x.PostedOn)">@Localizer["Posted On"]</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<Review, object>(x=>x.Work.OverallAuthorRating)">@Localizer["Author Rating"]</MudTableSortLabel></MudTh>
+            <MudTh Style="text-align: start">@Localizer["Open"]</MudTh>
+            <MudTh Style="text-align: start">@Localizer["Edit"]</MudTh>
+            <MudTh Style="text-align: start">@Localizer["Delete"]</MudTh>
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="Review Title">@context.Title</MudTd>
@@ -43,7 +44,7 @@ else
             <MudTd DataLabel="Posted On">@context.PostedOn.ToString("dd/MM/yyyy HH:mm")</MudTd>
             <MudTd DataLabel="Author Rating">@context.Work.OverallAuthorRating</MudTd>
             <MudTd DataLabel="Open"><MudIconButton Icon="@Icons.Material.Filled.OpenInNew" 
-                OnClick='() => NavigateTo("review", context.Id)'>Open</MudIconButton></MudTd>
+                OnClick='() => NavigateTo("review", context.Id)'>@Localizer["Open"]</MudIconButton></MudTd>
             <MudTd DataLabel="Edit"><MudIconButton Icon="@Icons.Material.Filled.Edit" 
                 OnClick='() => navigationManager.NavigateTo($"/ReviewForm/{context.Id}")'></MudIconButton></MudTd>
             <MudTd DataLabel="Delete"><MudIconButton Icon="@Icons.Material.Filled.Delete" 
