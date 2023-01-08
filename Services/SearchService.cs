@@ -19,6 +19,7 @@ namespace CourseProject.Services
         public async Task<List<Review>> Search(string text)
         {
             using var ctx = _dbContextFactory.CreateDbContext();
+            reviews = new();
             reviews.AddRange(await ctx.Reviews
                 .Where(r => EF.Functions.FreeText(r.Text, text))
                 .ToListAsync());

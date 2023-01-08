@@ -35,8 +35,8 @@
         </div>
         <MudDivider Class="py-1"/>
         <AuthorizeView>
-            <MudText Typo="Typo.caption">What do you think about @Review.Work.Title?</MudText>
-            <MudRating Class="pr-1" SelectedValue="rating" SelectedValueChanged="SetRating"/>
+            <MudText Typo="Typo.caption">@Localizer["What do you think about"] @Review.Work.Title?</MudText>
+            <MudRating Class="pr-1" SelectedValueChanged="SetRating" @onclick="@(() => Snackbar.Add(Localizer["Your vote is taken!"]))" />
         </AuthorizeView>
         <br/>
         <MudText Typo="Typo.caption">@Localizer["Average user rating"]: @Review.Work.OverallUserRating/5</MudText>
@@ -62,7 +62,7 @@
     }
 
     private void NavigateTo(string page, int? reviewId = null)
-    => navigationManager.NavigateTo($"/{page}/{reviewId}");
+        => navigationManager.NavigateTo($"/{page}/{reviewId}");
 
     private async Task Like()
     {

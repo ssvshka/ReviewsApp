@@ -163,7 +163,7 @@ namespace CourseProject.Services
         public async Task AddTag(Tag tag)
         {
             using var ctx = _dbContextFactory.CreateDbContext();
-            if (!ctx.Tags.Contains(tag))
+            if (!ctx.Tags.Contains(tag) || !string.IsNullOrWhiteSpace(tag.Title))
                 await ctx.Tags.AddAsync(tag);
             await ctx.SaveChangesAsync();
         }

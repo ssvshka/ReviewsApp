@@ -52,7 +52,7 @@ namespace CourseProject.Services
         public async Task DeleteReviewAsync(Review review, string userId)
         {
             await _reviewService.DeleteReview(review);
-            await GetUserReviewsAsync(userId);
+            NotifyListChanged(UserReviews!, EventArgs.Empty);
         }
 
         public async Task GetCommentsAsync(int reviewId)
@@ -71,11 +71,6 @@ namespace CourseProject.Services
         {
             Tags = await _reviewService.GetTags();
             NotifyListChanged(Tags, EventArgs.Empty);
-        }
-
-        public async Task<List<Tag>> FindTagsByValueAsync(string value)
-        {
-            return await _reviewService.GetTagsByValue(value);
         }
 
         public async Task GetCurrentReviewTagsAsync(int reviewId)
@@ -107,18 +102,6 @@ namespace CourseProject.Services
         {
             Works = await _reviewService.GetWorksByCategory(category);
             NotifyListChanged(Works, EventArgs.Empty);
-        }
-
-        public async Task GetAllWorksAsync()
-        {
-            Works = await _reviewService.GetAllWorks();
-            NotifyListChanged(Works, EventArgs.Empty);
-        }
-
-        public async Task DeleteWorkAsync(Work work)
-        {
-            await _reviewService.DeleteWork(work);
-            await GetAllWorksAsync();
         }
 
         public void AddTagToView(string tag)

@@ -135,6 +135,9 @@
   <data name="Average rating" xml:space="preserve">
     <value>Средний рейтинг</value>
   </data>
+  <data name="Average user rating" xml:space="preserve">
+    <value>Средний рейтинг пользователей</value>
+  </data>
   <data name="Book" xml:space="preserve">
     <value>Книга</value>
   </data>
@@ -146,6 +149,9 @@
   </data>
   <data name="Delete" xml:space="preserve">
     <value>Удалить</value>
+  </data>
+  <data name="Drag and drop files here or click" xml:space="preserve">
+    <value>Перетащите файлы или нажмите</value>
   </data>
   <data name="Edit" xml:space="preserve">
     <value>Редактировать</value>
@@ -219,8 +225,14 @@
   <data name="Tag cloud" xml:space="preserve">
     <value>Облако тегов</value>
   </data>
+  <data name="Uploading" xml:space="preserve">
+    <value>Загрузка</value>
+  </data>
   <data name="Users Rating" xml:space="preserve">
     <value>Рейтинг пользователей</value>
+  </data>
+  <data name="What do you think about" xml:space="preserve">
+    <value>Что вы думаете о</value>
   </data>
   <data name="Work" xml:space="preserve">
     <value>Произведение</value>
@@ -236,5 +248,8 @@
   </data>
   <data name="Your reviews" xml:space="preserve">
     <value>Ваши обзоры</value>
+  </data>
+  <data name="Your vote is taken!" xml:space="preserve">
+    <value>Ваш голос учтен!</value>
   </data>
 </root>

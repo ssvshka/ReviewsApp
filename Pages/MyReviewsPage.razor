@@ -14,15 +14,14 @@ else if (!viewService.UserReviews.Any())
 {
     <MudText Class="pa-4">@Localizer["You dont have any reviews yet"]</MudText>
     <MudFab Class="ma-2" StartIcon="@Icons.Material.Filled.Edit" Label="@Localizer["Write a review"]"
-        OnClick='() => NavigateTo("WriteReview", user.Id)' />
+        Href=@($"/WriteReview/{user.Id}") />
 }
 else
 {
     <MudTable Items="@viewService.UserReviews" Filter="new Func<Review,bool>(FilterFunc)" >
         <ToolBarContent>
             <MudText Typo="Typo.h6" Class="mr-4">@Localizer["Reviews of"] @user.Email</MudText>
-            <MudFab StartIcon="@Icons.Material.Filled.Edit" Label="@Localizer["Write a review"]" 
-                OnClick='() => NavigateTo("WriteReview", user.Id)' />
+            <MudFab StartIcon="@Icons.Material.Filled.Edit" Label="@Localizer["Write a review"]" Href=@($"/WriteReview/{user.Id}") />
             <MudSpacer />
             <MudTextField @bind-Value="searchString" Placeholder='@Localizer["Search"]' 
                 Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"/>
@@ -44,9 +43,9 @@ else
             <MudTd DataLabel="Posted On">@context.PostedOn.ToString("dd/MM/yyyy HH:mm")</MudTd>
             <MudTd DataLabel="Author Rating">@context.Work.OverallAuthorRating</MudTd>
             <MudTd DataLabel="Open"><MudIconButton Icon="@Icons.Material.Filled.OpenInNew" 
-                OnClick='() => NavigateTo("review", user.Id)'>@Localizer["Open"]</MudIconButton></MudTd>
+                Href=@($"/Review/{context.Id}")>@Localizer["Open"]</MudIconButton></MudTd>
             <MudTd DataLabel="Edit"><MudIconButton Icon="@Icons.Material.Filled.Edit" 
-                OnClick='() => navigationManager.NavigateTo($"/ReviewForm/{context.Id}")'></MudIconButton></MudTd>
+                 Href=@($"/Edit/{context.Id}")></MudIconButton></MudTd>
             <MudTd DataLabel="Delete"><MudIconButton Icon="@Icons.Material.Filled.Delete" 
                 OnClick="() => DeleteReview(context)"></MudIconButton></MudTd>
         </RowTemplate>
@@ -72,10 +71,9 @@ else
         => this.InvokeAsync(this.StateHasChanged);
 
     private async Task DeleteReview(Review review)
-        => await viewService.DeleteReviewAsync(review, userId);
-
-    private void NavigateTo(string page, string userId)
-        => navigationManager.NavigateTo($"/{page}/{userId}");
+    {
+        await viewService.DeleteReviewAsync(review, userId);
+    }
 
     private bool FilterFunc(Review review)
     {

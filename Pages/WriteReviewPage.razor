@@ -1,7 +1,6 @@
 ﻿@page "/WriteReview"
 @page "/WriteReview/{userId}"
 @page "/WriteReview/{userId}/{reviewId:int}"
-@using CourseProject.Services
 @using TinyMCE.Blazor
 @inject ReviewService reviewService
 @inject ViewService viewService
@@ -46,7 +45,7 @@ else
                             <Editor ApiKey="@TINY_MCE_API_KEY" @bind-Value="review.Text" />
                             <UploadBlobsComponent @bind-ImageUrl="review.ImageUrl" />
                             <MudRating @bind-SelectedValue="review.Rating" MaxValue="10" />
-                            <MudButton OnClick="PublishReviewAndRedirectToHome" @onkeydown="@Enter" Variant="Variant.Filled">Publish</MudButton>
+                            <MudButton OnClick="PublishReview" @onkeydown="@Enter" Variant="Variant.Filled">Publish</MudButton>
                         </MudForm>
                     </MudPaper>
                 </MudItem>
@@ -75,13 +74,13 @@ else
         review.Work.Category = new Category();
     }
 
-    private async Task PublishReviewAndRedirectToHome()
+    private async Task PublishReview()
     {
         await SetReviewData();
         await reviewService.AddReview(review);
         await AddTagsToReview();
         await reviewService.CalculateAuthorRating(review.Work.Title);
-        navigationManager.NavigateTo("/");
+        navigationManager.NavigateTo($"Review/{review.Id}");
     }
 
     private async Task SetReviewData()
@@ -177,6 +176,6 @@ else
     private async Task Enter(KeyboardEventArgs e)
     {
         if (e.Code == "Enter" || e.Code == "NumpadEnter")
-            await PublishReviewAndRedirectToHome();
+            await PublishReview();
     }
 }

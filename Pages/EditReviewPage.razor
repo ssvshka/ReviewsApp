@@ -1,4 +1,4 @@
-﻿@page "/ReviewForm/{reviewId:int}"
+﻿@page "/Edit/{reviewId:int}"
 @using CourseProject.Services
 @using TinyMCE.Blazor
 @inject ReviewService reviewService
@@ -29,7 +29,7 @@ else
                                              Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true"></MudTextField>
                             <MudAutocomplete T="string" Label="Work" Dense="true" @bind-Value="review.Work.Title" SearchFunc="@SearchWorks"
                                              Variant="Variant.Outlined" OnBlur="SetWorkData" CoerceValue="true"/>
-                            <MudAutocomplete T="string" Label="Tags" OnAdornmentClick="AddTag" @bind-Value="tagTitle" SearchFunc="@SearchTags"
+                            <MudAutocomplete T="string" Label="Tags" OnAdornmentClick="AddTag" OnKeyUp="AddTagWithEnter" @bind-Value="tagTitle" SearchFunc="@SearchTags"
                                              Variant="Variant.Outlined" AdornmentIcon="@Icons.Material.Filled.PlusOne" CoerceValue="true" />
                             <MudItem xs="12" md="12">
                                 <MudText Class="mb-n3" Typo="Typo.body2">
@@ -44,7 +44,7 @@ else
                             <Editor ApiKey="@TINY_MCE_API_KEY" @bind-Value="review.Text" />
                             <UploadBlobsComponent @bind-ImageUrl="review.ImageUrl"/>
                             <MudRating @bind-SelectedValue="review.Rating" MaxValue="10" />
-                            <MudButton OnClick="PublishReviewAndRedirectToHome" @onkeydown="@Enter" Variant="Variant.Filled">Publish</MudButton>
+                            <MudButton OnClick="PublishReview" Variant="Variant.Filled">Publish</MudButton>
                         </MudForm>   
                     </MudPaper>
                 </MudItem>
@@ -71,12 +71,12 @@ else
         await viewService.GetCurrentReviewTagsAsync(ReviewId);
     }
 
-    private async Task PublishReviewAndRedirectToHome()
+    private async Task PublishReview()
     {
         await SetReviewData();
         await reviewService.EditReview(review);
         await reviewService.CalculateAuthorRating(review.Work.Title);
-        navigationManager.NavigateTo("/");
+        navigationManager.NavigateTo($"Review/{review.Id}");
     }
 
     private async Task SetReviewData()
@@ -111,6 +111,7 @@ else
     private async Task AddTagsToReview()
     {
         Tag t;
+        await reviewService.RemoveTagsFromReview(ReviewId);
         foreach (var tag in viewService.CurrentReviewTags)
         {
             if (await reviewService.FindTagByTitle(tag))
@@ -122,7 +123,6 @@ else
                 t = new Tag { Title = tagTitle };
                 await reviewService.AddTag(t);
             }
-            await reviewService.RemoveTagsFromReview(ReviewId);
             await reviewService.AddTagToReview(new ReviewTag
                 {
                     ReviewId = review.Id,
@@ -158,9 +158,9 @@ else
             .Select(x => x.Title);
     }
 
-    private async Task Enter(KeyboardEventArgs e)
+    private void AddTagWithEnter(KeyboardEventArgs e)
     {
         if (e.Code == "Enter" || e.Code == "NumpadEnter")
-            await PublishReviewAndRedirectToHome();
+            AddTag();
     }
 }

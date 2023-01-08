@@ -1,22 +1,29 @@
 ﻿@page "/blobfiles"
 @inject AzureStorageHelper AzureStorageHelper
+@inject IStringLocalizer<App> Localizer
 
-<MudStack Style="width: 100%">
+<MudStack Style="width: 100%" Class="py-2">
     <MudFileUpload T="IReadOnlyList<IBrowserFile>" OnFilesChanged="OnInputFileChange" Hidden="@uploading"
                    Class="flex-1" InputClass="absolute mud-width-full mud-height-full overflow-hidden z-20" InputStyle="opacity:0"
                    @ondragenter="@HandleDragEnter" @ondragleave="@HandleDragLeave" @ondragend="@HandleDragLeave">
         <ButtonTemplate>
-            <MudPaper Height="300px" Outlined="true" Class="@dropClass">
-                <MudText Typo="Typo.h6">Drag and drop files here or click</MudText>
+            <MudPaper Height="200px" Outlined="true" Class="@dropClass">
+                @if(uploading)
+                {
+                    <MudText Typo="Typo.h6">@Localizer["Uploading"]...</MudText>
+                }
+                else
+                {
+                    <MudText Typo="Typo.h6">@Localizer["Drag and drop files here or click"]</MudText>
+                }
             </MudPaper>
         </ButtonTemplate>
     </MudFileUpload>
 </MudStack>
 
-@if (ImageUrl != "")
+@if (!string.IsNullOrWhiteSpace(ImageUrl))
 {
-    <img src="@ImageUrl" />
-    <br />
+    <MudImage Class="pa-2" Src="@ImageUrl" Width="332" Height="250"></MudImage>
     <br />
 }
 

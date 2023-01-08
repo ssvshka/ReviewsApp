@@ -23,8 +23,6 @@ var localizationOptions = new RequestLocalizationOptions()
     .AddSupportedCultures(supportedCultures)
     .AddSupportedUICultures(supportedCultures);
 
-//IronPdf.License.LicenseKey = "IRONPDF.SERGEISHUBOCHKIN.3660-48D6B91B07-BZJ2WUSP5JFCEUD-RDYNUVC3NTZH-WQNEY4KZVAKI-U67JJZER4CK7-LIPERHVSSPFH-XPUAQO-TZKTJXQIJUSIUA-DEPLOYMENT.TRIAL-LRDUOM.TRIAL.EXPIRES.03.FEB.2023";
-
 builder.Services.AddDbContextFactory<ApplicationDbContext>(options => options.UseSqlServer(cs));
 builder.Services.AddScoped<ReviewService>();
 builder.Services.AddScoped<ViewService>();
