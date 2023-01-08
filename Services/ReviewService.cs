@@ -1,5 +1,4 @@
-﻿using CloudinaryDotNet.Actions;
-using CourseProject.Data;
+﻿using CourseProject.Data;
 using CourseProject.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -137,6 +136,7 @@ namespace CourseProject.Services
                 .FirstOrDefaultAsync(u => u.WorkId == workId);
             return u == null ? 0 : u.Rating;
         }
+
         public async Task UpdateOverallUserRating(int workId)
         {
             using var ctx = _dbContextFactory.CreateDbContext();
@@ -154,7 +154,7 @@ namespace CourseProject.Services
             using var ctx = _dbContextFactory.CreateDbContext();
             var u = await ctx.UserRatings
                 .Where(u => u.UserId == userId)
-                .SingleAsync(u=> u.WorkId == workId);
+                .SingleAsync(u => u.WorkId == workId);
             u.Rating = value;
             ctx.Update(u);
             await ctx.SaveChangesAsync();

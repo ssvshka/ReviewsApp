@@ -6,24 +6,40 @@
 @inject ISnackbar Snackbar
 
 <MudCard>
-    <MudCardMedia Image=@Review.ImageUrl />
     <MudCardContent>
+        <MudImage Class="py-2 rounded-lg" Fluid="true" Src="@Review.ImageUrl" />
         <MudText Typo="Typo.h5">@Review.Title</MudText>
-        <MudMarkdown Value="@Review.Text" />
-        <div class="d-flex flex-column align-left">
-            <MudText Typo="Typo.caption">@Localizer["Posted by"] @Review.User.Email</MudText>
-            <AuthorizeView>
-                <MudRating MaxValue="1" SelectedValue="selectedValue" @onclick="Like" 
-                    FullIcon="@Icons.Material.Filled.ThumbUp" EmptyIcon="@Icons.Material.Outlined.ThumbUp" />
-                <MudRating SelectedValueChanged="SetRating"
-                           @onclick='() => Snackbar.Add("Your vote is taken!")' />
-            </AuthorizeView>
-            <MudText Typo="Typo.caption">@Localizer["Likes"]: @likesAmount</MudText>
-            <MudText Typo="Typo.caption">@Localizer["Authors Rating"]: @Review.Work.OverallAuthorRating</MudText>
-            <MudText Typo="Typo.caption">@Localizer["Users Rating"]: @Review.Work.OverallUserRating</MudText>
+        <div class="d-flex flex-row">
+            <MudText Typo="Typo.caption">@Localizer[$"{Review.Work.Category}"]: @Review.Work.Title </MudText>
+            <MudText Class="ml-1" Typo="Typo.caption">@Localizer["Average rating"]: @Review.Work.OverallAuthorRating/10</MudText>
+            <MudSpacer/>
             <MudText Typo="Typo.caption">@Review.PostedOn.ToShortDateString()</MudText>
-            <MudButton OnClick='() => NavigateTo("review", Review.Id)'>@Localizer["Open"]</MudButton>
         </div>
+        <MudDivider Class="my-1" />
+        <MudMarkdown Value="@halfText"></MudMarkdown>
+        <MudLink OnClick='() => NavigateTo("review", Review.Id)'>@Localizer["Continue reading"]</MudLink>
+        <br/>
+        <div class="d-flex flex-row">
+            <MudText Typo="Typo.caption">@Review.User.Email</MudText>
+            <MudSpacer/>
+            <AuthorizeView>
+                <Authorized>
+                    <MudRating Class="pr-2" Size="Size.Small" MaxValue="1" SelectedValue="isReviewLiked" @onclick="Like"
+                                FullIcon="@Icons.Material.Filled.ThumbUp" EmptyIcon="@Icons.Material.Outlined.ThumbUp" />
+                    <MudText Typo="Typo.caption">@likesAmount</MudText>
+                </Authorized>
+                <NotAuthorized>
+                    <MudText Typo="Typo.caption">@Localizer["Likes"]: @likesAmount</MudText>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+        <MudDivider Class="py-1"/>
+        <AuthorizeView>
+            <MudText Typo="Typo.caption">What do you think about @Review.Work.Title?</MudText>
+            <MudRating Class="pr-1" SelectedValue="rating" SelectedValueChanged="SetRating"/>
+        </AuthorizeView>
+        <br/>
+        <MudText Typo="Typo.caption">@Localizer["Average user rating"]: @Review.Work.OverallUserRating/5</MudText>
     </MudCardContent>
 </MudCard>
 
@@ -32,23 +48,25 @@
     public Review Review { get; set; } = default!;
     [Parameter]
     public string CurrentUserId { get; set; } = default!;
-    private int selectedValue;
+    private int isReviewLiked;
     private int likesAmount;
     private int rating;
+    private string halfText = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
-        selectedValue = await userService.IsReviewLiked(CurrentUserId, Review.Id) ? 1 : 0;
+        isReviewLiked = await userService.IsReviewLiked(CurrentUserId, Review.Id) ? 1 : 0;
         likesAmount = await userService.GetUserLikesAmount(Review.UserId);
         rating = await reviewService.GetUserRating(CurrentUserId, Review.WorkId);
+        halfText = GetHalfText(Review.Text);
     }
 
     private void NavigateTo(string page, int? reviewId = null)
-        => navigationManager.NavigateTo($"/{page}/{reviewId}");
+    => navigationManager.NavigateTo($"/{page}/{reviewId}");
 
     private async Task Like()
     {
-        if (selectedValue == 0)
+        if (isReviewLiked == 0)
         {
             await userService.AddLike(new Like
                 {
@@ -56,13 +74,13 @@
                     UserId = CurrentUserId,
                     LikedUserId = Review.UserId
                 });
-            selectedValue = 1;
+            isReviewLiked = 1;
             likesAmount++; 
         }
         else
         {    
             await userService.RemoveLike(CurrentUserId!, Review.Id);
-            selectedValue = 0;
+            isReviewLiked = 0;
             likesAmount--;
         }
     }
@@ -70,21 +88,27 @@
     private async Task SetRating(int value)
     {
         if (rating == 0)
+            await SetUserRating(value);
+
+        else
         {
-            await reviewService.SetUserRating(new UserRating
+            await reviewService.UpdateUserRating(CurrentUserId, Review.WorkId, value);
+        }
+        await reviewService.UpdateOverallUserRating(Review.WorkId);
+    }
+
+    private async Task SetUserRating(int value)
+    {
+        await reviewService.SetUserRating(new UserRating
             {
                 Rating = value,
                 UserId = CurrentUserId,
                 WorkId = Review.WorkId
             });
-            rating = value;
-        }
+    }
 
-        else
-        {
-            await reviewService.UpdateUserRating(CurrentUserId, Review.WorkId, value);
-            rating = value;
-        }
-        await reviewService.UpdateOverallUserRating(Review.WorkId);
+    private string GetHalfText(string text)
+    {
+        return $"{text.Substring(0, text.Length/2)}...";
     }
 }

@@ -120,6 +120,9 @@
   <data name="Admin page" xml:space="preserve">
     <value>Админка</value>
   </data>
+  <data name="Album" xml:space="preserve">
+    <value>Альбом</value>
+  </data>
   <data name="All reviews" xml:space="preserve">
     <value>Все обзоры</value>
   </data>
@@ -129,14 +132,26 @@
   <data name="Authors Rating" xml:space="preserve">
     <value>Рейтинг авторов</value>
   </data>
+  <data name="Average rating" xml:space="preserve">
+    <value>Средний рейтинг</value>
+  </data>
+  <data name="Book" xml:space="preserve">
+    <value>Книга</value>
+  </data>
   <data name="Category" xml:space="preserve">
     <value>Категория</value>
+  </data>
+  <data name="Continue reading" xml:space="preserve">
+    <value>Продолжить чтение</value>
   </data>
   <data name="Delete" xml:space="preserve">
     <value>Удалить</value>
   </data>
   <data name="Edit" xml:space="preserve">
     <value>Редактировать</value>
+  </data>
+  <data name="Game" xml:space="preserve">
+    <value>Игра</value>
   </data>
   <data name="Hello" xml:space="preserve">
     <value>Привет</value>
@@ -161,6 +176,9 @@
   </data>
   <data name="Most rated" xml:space="preserve">
     <value>Популярное</value>
+  </data>
+  <data name="Movie" xml:space="preserve">
+    <value>Фильм</value>
   </data>
   <data name="My reviews" xml:space="preserve">
     <value>Мои обзоры</value>

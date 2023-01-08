@@ -1,11 +1,11 @@
 ﻿<MudCard Outlined="true">
-    <MudCardHeader>
-        <CardHeaderContent>
-            <MudField Margin="Margin.Dense" Variant="Variant.Outlined">@Comment.User.Email @Comment.LeftOn.ToShortDateString()</MudField>
-        </CardHeaderContent>
-    </MudCardHeader>
     <MudCardContent>
-        <MudField>@Comment.Text</MudField>
+        <div class="d-flex flex-row">
+            <MudText Typo="Typo.caption">@Comment.User.Email</MudText>
+            <MudSpacer/>
+            <MudText Typo="Typo.caption">@Comment.LeftOn.ToShortDateString()</MudText>
+        </div>
+        <MudText>@Comment.Text</MudText>
     </MudCardContent>
 </MudCard>
 

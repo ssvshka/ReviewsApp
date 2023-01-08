@@ -3,6 +3,7 @@
 @inject UserService userService
 @inject ViewService viewService
 @implements IAsyncDisposable
+@inject IStringLocalizer<App> Localizer
 @page "/review/{reviewId:int}"
 
 @if (review is null)
@@ -12,20 +13,31 @@
 else
 {
     <MudCard>
-        <MudCardMedia Image=@review.ImageUrl></MudCardMedia>
         <MudCardContent>
+            <MudImage Class="py-2 rounded-lg" Fluid="true" Src="@review.ImageUrl" />
             <MudText Typo="Typo.h5">@review.Title</MudText>
+            <div class="d-flex flex-row">
+                <MudText Typo="Typo.caption">@Localizer[$"{review.Work.Category}"]: @review.Work.Title </MudText>
+                <MudText Class="ml-1" Typo="Typo.caption">@Localizer["Average rating"]: @review.Work.OverallAuthorRating/10</MudText>
+                <MudSpacer />
+                <MudText Typo="Typo.caption">@review.PostedOn.ToShortDateString()</MudText>
+            </div>
             <MudMarkdown Value="@review.Text" />
-            <MudText Typo="Typo.caption">Posted by @review.User.Email</MudText>
-            <MudText Typo="Typo.caption">on @review.PostedOn</MudText>
+            <div class="d-flex flex-row">
+                <MudText Typo="Typo.caption">@review.User.Email</MudText>
+                <MudSpacer/>
+                <MudText Typo="Typo.caption">@review.Rating/10</MudText>
+            </div>
         </MudCardContent>
     </MudCard>
     <AuthorizeView>
         <Authorized>
-            <MudTextField T="string" Label="Leave a comment here..." Variant="Variant.Outlined" @bind-Value="@comment.Text" Lines="3" />
-            <MudButton OnClick="Send" Variant="Variant.Filled" Color="Color.Primary">Post</MudButton>
+            <MudTextField T="string" Label="@Localizer["Leave a comment here"]" Variant="Variant.Outlined" @bind-Value="@comment.Text" Lines="3" />
+            <MudButton Class="ma-1" OnClick="Send" Variant="Variant.Filled" Color="Color.Primary">Post</MudButton>
         </Authorized>
-        <NotAuthorized>Login to leave a comment.</NotAuthorized>
+        <NotAuthorized>
+            <MudText>@Localizer["Login to leave a comment"].</MudText>
+        </NotAuthorized>
     </AuthorizeView>
     @if (viewService.Comments is not null)
     {
@@ -33,10 +45,6 @@ else
         {
             <CommentViewComp Comment="@c"></CommentViewComp>
         }
-    }
-    else
-    {
-        <MudText>There is no comments under this review.</MudText>
     }
 }
 
