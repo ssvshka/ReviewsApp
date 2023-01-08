@@ -8,6 +8,7 @@ using CourseProject.Services;
 using CourseProject.Models;
 using CourseProject.Data;
 using CourseProject.Hubs;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
@@ -30,6 +31,7 @@ builder.Services.AddScoped<ViewService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<AzureStorageHelper>();   
 builder.Services.AddScoped<SearchService>();
+builder.Services.AddScoped<TagCloudService>();
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddDefaultIdentity<User>(options =>
 {
@@ -44,6 +46,7 @@ builder.Services.AddDefaultIdentity<User>(options =>
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
     options.User.RequireUniqueEmail = false;
 })
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddRazorPages();

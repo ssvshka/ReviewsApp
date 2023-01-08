@@ -6,26 +6,26 @@
 @inject NavigationManager navigationManager
 @inject IStringLocalizer<App> Localizer
 
-<MudButton OnClick='() => NavigateTo("reviewform", 0)' Variant="Variant.Filled">Write a review</MudButton>
-@if (userId is null)
+@if (viewService.UserReviews is null || user is null)
 {
-    <text>@Localizer["Login first!"]</text>
+    <MudText Class="pa-4">@Localizer["Loading"]...</MudText>
 }
-else if (viewService.CurrentUserReviews is null)
+else if (!viewService.UserReviews.Any())
 {
-    <text>@Localizer["Loading"]...</text>
-}
-else if (!viewService.CurrentUserReviews.Any())
-{
-    <p>@Localizer["You dont have any reviews yet"]</p>
+    <MudText Class="pa-4">@Localizer["You dont have any reviews yet"]</MudText>
+    <MudFab Class="ma-2" StartIcon="@Icons.Material.Filled.Edit" Label="@Localizer["Write a review"]"
+        OnClick='() => NavigateTo("WriteReview", user.Id)' />
 }
 else
 {
-    <MudTable Items="@viewService.CurrentUserReviews" Filter="new Func<Review,bool>(FilterFunc)">
+    <MudTable Items="@viewService.UserReviews" Filter="new Func<Review,bool>(FilterFunc)" >
         <ToolBarContent>
-            <MudText Typo="Typo.h6">@Localizer["Your reviews"]</MudText>
+            <MudText Typo="Typo.h6" Class="mr-4">@Localizer["Reviews of"] @user.Email</MudText>
+            <MudFab StartIcon="@Icons.Material.Filled.Edit" Label="@Localizer["Write a review"]" 
+                OnClick='() => NavigateTo("WriteReview", user.Id)' />
             <MudSpacer />
-            <MudTextField @bind-Value="searchString" Placeholder='@Localizer["Search"]' Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+            <MudTextField @bind-Value="searchString" Placeholder='@Localizer["Search"]' 
+                Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"/>
         </ToolBarContent>
         <HeaderContent>
             <MudTh><MudTableSortLabel SortBy="new Func<Review, object>(x=>x.Title)">@Localizer["Review Title"]</MudTableSortLabel></MudTh>
@@ -44,7 +44,7 @@ else
             <MudTd DataLabel="Posted On">@context.PostedOn.ToString("dd/MM/yyyy HH:mm")</MudTd>
             <MudTd DataLabel="Author Rating">@context.Work.OverallAuthorRating</MudTd>
             <MudTd DataLabel="Open"><MudIconButton Icon="@Icons.Material.Filled.OpenInNew" 
-                OnClick='() => NavigateTo("review", context.Id)'>@Localizer["Open"]</MudIconButton></MudTd>
+                OnClick='() => NavigateTo("review", user.Id)'>@Localizer["Open"]</MudIconButton></MudTd>
             <MudTd DataLabel="Edit"><MudIconButton Icon="@Icons.Material.Filled.Edit" 
                 OnClick='() => navigationManager.NavigateTo($"/ReviewForm/{context.Id}")'></MudIconButton></MudTd>
             <MudTd DataLabel="Delete"><MudIconButton Icon="@Icons.Material.Filled.Delete" 
@@ -57,15 +57,15 @@ else
     [Parameter]
     public string userId { get; set; } = "";
     private string searchString = "";
+    private User user = default!;
 
     protected override async Task OnInitializedAsync()
     {
-        userId = await userService.GetCurrentUserId();
-        if (!string.IsNullOrEmpty(userId))
-        {
-            await viewService.GetUserReviewsAsync(userId);
-            viewService.ListChanged += OnListChanged;
-        }
+        if (string.IsNullOrEmpty(userId))
+            user = await userService.GetCurrentUserAsync();
+        else user = await userService.GetUserById(userId);
+        await viewService.GetUserReviewsAsync(user.Id);
+        viewService.ListChanged += OnListChanged;
     }
 
     private void OnListChanged(object? sender, EventArgs e)
@@ -74,8 +74,8 @@ else
     private async Task DeleteReview(Review review)
         => await viewService.DeleteReviewAsync(review, userId);
 
-    private void NavigateTo(string page, int reviewId)
-        => navigationManager.NavigateTo($"/{page}/{reviewId}");
+    private void NavigateTo(string page, string userId)
+        => navigationManager.NavigateTo($"/{page}/{userId}");
 
     private bool FilterFunc(Review review)
     {

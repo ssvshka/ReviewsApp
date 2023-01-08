@@ -1,34 +1,73 @@
 ﻿@page "/Admin"
 @using CourseProject.Services
+@using Microsoft.AspNetCore.Identity;
 @inject ViewService viewService
+@inject UserService userService
 @inject IStringLocalizer<App> Localizer
 
-<MudTable Items="@viewService.Users">
-    <HeaderContent>
-        <MudTh>Id</MudTh>
-        <MudTh>@Localizer["Name"]</MudTh>
-        <MudTh>@Localizer["Review"]</MudTh>
-    </HeaderContent>
-    <RowTemplate>
-        <MudTd DataLabel="Id">@context.Id</MudTd>
-        <MudTd DataLabel="Name">@context.UserName</MudTd>
-        @if (@context.Reviews is not null)
-        {
-            <MudTd DataLabel="Name">@context.Reviews.First().Title</MudTd>
-        }
-    </RowTemplate>
-</MudTable>
+<AuthorizeView>
+    <Authorized>
+        <MudTable Items="@viewService.Users">
+            <HeaderContent>
+                <MudTh>Id</MudTh>
+                <MudTh>@Localizer["Email"]</MudTh>
+                <MudTh Style="text-align: start">@Localizer["Block/unblock"]</MudTh>
+                <MudTh Style="text-align: start">@Localizer["Role"]</MudTh>
+                <MudTh Style="text-align: start">@Localizer["Delete user"]</MudTh>
+            </HeaderContent>
+            <RowTemplate Context="ctx">
+                <MudTd DataLabel="Id"><MudLink Href='@($"/MyReviews/{ctx.Id}")'>@ctx.Id.Substring(0, 8)...</MudLink></MudTd>
+                <MudTd DataLabel="Email">@ctx.Email</MudTd>
+                <MudTd DataLabel="Block/unblock">
+                </MudTd>
+                <MudTd DataLabel="Role">
+                    <MudItem Style="width=50px">
+                        <MudSelect T="string" Label="Role" ValueChanged="v => SetRole(ctx.UserName!, v)">
+                            @foreach (var r in roles)
+                            {
+                                <MudSelectItem Value="r"></MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                </MudTd>
+                <MudTd DataLabel="Delete user">
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete"/>
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </Authorized>
+    <NotAuthorized>
+        <MudText Class="pa-4">@Localizer["You have to be an admin to see this page"]</MudText>
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
+    private List<string> roles = new();
+
     protected override async Task OnInitializedAsync()
     {
         await viewService.GetUsersAsync();
         viewService.ListChanged += OnListChanged;
+        roles = await userService.GetRoles();
+    }
+
+    private async Task SetRole(string userName, string value)
+    {
+        if (value == "Admin")
+        {    
+            await userService.SetRole(userName, value);
+            await userService.RemoveRole(userName, "User");
+        }
+        else
+        {
+            await userService.SetRole(userName, value);
+            await userService.RemoveRole(userName, "Admin");
+        }
     }
 
     private void OnListChanged(object? sender, EventArgs e)
-    => this.InvokeAsync(this.StateHasChanged);
+        => this.InvokeAsync(this.StateHasChanged);
 
     public void Dispose()
-    => viewService.ListChanged -= OnListChanged;
+        => viewService.ListChanged -= OnListChanged;
 }

@@ -9,11 +9,12 @@ namespace CourseProject.Services
         public ReviewService _reviewService;
         public UserService _userService;
 
-        public List<Review>? Reviews { get; private set; }
-        public List<Review>? CurrentUserReviews { get; private set; }
+        public List<Review>? AllReviews { get; private set; }
+        public List<Review>? UserReviews { get; private set; }
         public List<User>? Users { get; private set; }
         public List<Comment>? Comments { get; private set; }
         public List<Tag>? Tags { get; private set; }
+        public List<string> CurrentReviewTags { get; private set; } = new();
         public List<Work>? Works { get; private set; }
         public List<Category>? Categories { get; private set; }
         public List<ReviewTag>? ReviewTags { get; private set; }
@@ -26,20 +27,20 @@ namespace CourseProject.Services
 
         public async Task GetReviewsAsync()
         {
-            Reviews = await _reviewService.GetReviewsAsync();
-            NotifyListChanged(Reviews, EventArgs.Empty);
+            AllReviews = await _reviewService.GetReviewsAsync();
+            NotifyListChanged(AllReviews, EventArgs.Empty);
         }
 
         public void OrderReviewsByRating()
         {
-            Reviews = Reviews!.OrderByDescending(x => x.Work.OverallAuthorRating).ToList();
-            NotifyListChanged(Reviews!, EventArgs.Empty);
+            AllReviews = AllReviews!.OrderByDescending(x => x.Work.OverallAuthorRating).ToList();
+            NotifyListChanged(AllReviews!, EventArgs.Empty);
         }
 
         public async Task GetUserReviewsAsync(string id)
         {
-            CurrentUserReviews = await _reviewService.GetReviewsAsync(id);
-            NotifyListChanged(CurrentUserReviews, EventArgs.Empty);
+            UserReviews = await _reviewService.GetReviewsAsync(id);
+            NotifyListChanged(UserReviews, EventArgs.Empty);
         }
 
         public async Task GetUsersAsync()
@@ -79,8 +80,12 @@ namespace CourseProject.Services
 
         public async Task GetCurrentReviewTagsAsync(int reviewId)
         {
-            ReviewTags = await _reviewService.GetReviewTags(reviewId);
-            NotifyListChanged(ReviewTags, EventArgs.Empty);
+            var tags = await _reviewService.GetReviewTags(reviewId);
+            foreach (var t in tags) 
+            {
+                CurrentReviewTags.Add(t.Tag.Title);
+            }
+            NotifyListChanged(CurrentReviewTags, EventArgs.Empty);
         }
 
         public async Task AddTagToReview(ReviewTag reviewTag)
@@ -90,10 +95,12 @@ namespace CourseProject.Services
             NotifyListChanged(ReviewTags, EventArgs.Empty);
         }
 
-        public async Task RemoveTagFromReviewAsync(int reviewId, string tagTitle)
+        public async Task RemoveTagFromReviewAsync(string title)
         {
-            await _reviewService.RemoveTagFromReview(reviewId, tagTitle);
-            NotifyListChanged(ReviewTags, EventArgs.Empty);
+            //await _reviewService.RemoveTagFromReview(reviewId, tagTitle);
+            var t = await _reviewService.GetTagByTitle(title);
+            //ReviewTags!.Remove(t);
+            NotifyListChanged(ReviewTags!, EventArgs.Empty);
         }
 
         public async Task GetWorksByCategoryAsync(Category category)
@@ -112,6 +119,19 @@ namespace CourseProject.Services
         {
             await _reviewService.DeleteWork(work);
             await GetAllWorksAsync();
+        }
+
+        public void AddTagToView(string tag)
+        {
+            if (!CurrentReviewTags.Contains(tag))
+                CurrentReviewTags.Add(tag);
+            NotifyListChanged(CurrentReviewTags, EventArgs.Empty);
+        }
+
+        public void RemoveTagFromView(string tag)
+        {
+            CurrentReviewTags.Remove(tag);
+            NotifyListChanged(CurrentReviewTags, EventArgs.Empty);
         }
 
         public event EventHandler<EventArgs>? ListChanged;

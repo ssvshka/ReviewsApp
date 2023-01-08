@@ -2,8 +2,8 @@
 using CourseProject.Models;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System;
 
 namespace CourseProject.Services
 {
@@ -11,11 +11,14 @@ namespace CourseProject.Services
     {
         private IDbContextFactory<ApplicationDbContext> _dbContextFactory;
         private AuthenticationStateProvider _authStateProvider;
+        private UserManager<User> _userManager;
 
-        public UserService(IDbContextFactory<ApplicationDbContext> dbContextFactory, AuthenticationStateProvider authStateProvider)
+        public UserService(IDbContextFactory<ApplicationDbContext> dbContextFactory, 
+            AuthenticationStateProvider authStateProvider, UserManager<User> userManager)
         {
             _dbContextFactory = dbContextFactory;
             _authStateProvider = authStateProvider;
+            _userManager = userManager;
         }
 
         public async Task<List<User>> GetAllUsersAsync()
@@ -30,14 +33,20 @@ namespace CourseProject.Services
             var authState = await _authStateProvider.GetAuthenticationStateAsync();
             var user = authState.User;
             return await ctx.Users
-                .Include(x => x.UserName)
                 .SingleAsync(u => u.UserName == user.Identity!.Name);
         }
+
         public async Task<string> GetCurrentUserId()
         {
             using var ctx = _dbContextFactory.CreateDbContext();
             var user = (await _authStateProvider.GetAuthenticationStateAsync()).User;
             return user.FindFirst(u => u.Type.Contains("nameidentifier"))?.Value!;
+        }
+
+        public async Task<User> GetUserById(string userId)
+        {
+            using var ctx = _dbContextFactory.CreateDbContext();
+            return await ctx.Users.SingleAsync(u => u.Id == userId);
         }
 
         public async Task AddLike(Like like)
@@ -67,6 +76,58 @@ namespace CourseProject.Services
         {
             using var ctx = _dbContextFactory.CreateDbContext();
             return await ctx.Likes.CountAsync(l => l.LikedUserId == userId);
+        }
+
+        public async Task SetRole(string userName, string role)
+        {
+            var user = await _userManager.FindByNameAsync(userName);
+            await _userManager.AddToRoleAsync(user!, role);
+        }
+
+        public async Task RemoveRole(string userName, string role)
+        {
+            var user = await _userManager.FindByNameAsync(userName);
+            await _userManager.RemoveFromRoleAsync(user!, role);
+        }
+
+        public async Task<bool> IsInRole(User user, string role) 
+        { 
+            return await _userManager.IsInRoleAsync(user, role);
+        }
+
+        public async Task<string> GetUserRole(string userName)
+        {
+            var user = await _userManager.FindByNameAsync(userName);
+            var roles = await _userManager.GetRolesAsync(user!);
+            return roles.FirstOrDefault()!;
+        }
+
+        public async Task<List<string>> GetRoles()
+        {
+            using var ctx = _dbContextFactory.CreateDbContext();
+            return await ctx.Roles.Select(r => r.Name).ToListAsync();
+        }
+
+        public async Task BlockUser(User user)
+        {
+            //var lockoutEndDate = new DateTime(2999, 01, 01);
+            await _userManager.SetLockoutEnabledAsync(user, true);
+            //await UserManager.SetLockoutEndDateAsync(user, lockoutEndDate);
+        }
+
+        public async Task UnblockUser(User user)
+        {
+            await _userManager.SetLockoutEnabledAsync(user, false);
+        }
+
+        public async Task<bool> IsUserBlocked(User user)
+        {
+            return await _userManager.IsLockedOutAsync(user);
+        }
+
+        public async Task DeleteUser(User user)
+        {
+            await _userManager.DeleteAsync(user);
         }
 
         private static async Task<Like> GetLike(string userId, int reviewId, ApplicationDbContext ctx)

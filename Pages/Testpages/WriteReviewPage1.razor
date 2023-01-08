@@ -1,5 +1,6 @@
-﻿@page "/ReviewForm"
-@page "/ReviewForm/{reviewId:int}"
+﻿@page "/WriteReview1"
+@page "/WriteReview1/{userId}"
+@page "/WriteReview1/{userId}/{reviewId:int}"
 @using CourseProject.Services
 @using TinyMCE.Blazor
 @inject ReviewService reviewService
@@ -19,34 +20,34 @@ else
                 <MudItem xs="12" sm="7">
                     <MudPaper Class="pa-4">
                         <MudForm>
-                            <MudSelect T="Category" Label="Category" Dense="true" Value="review.Work.Category" ValueChanged="SetCategory" 
-                                            Variant="Variant.Outlined" Disabled="IsEditing()">
-                                @foreach (var item in viewService.Categories!)
+                            <MudSelect T="Category" Label="Category" Dense="true" Value="review.Work.Category"
+                                   Variant="Variant.Outlined" ValueChanged="SetCategory">
+                                @foreach (var c in viewService.Categories!)
                                 {
-                                    <MudSelectItem Value="@item"/>
+                                    <MudSelectItem Value="@c" />
                                 }
                             </MudSelect>
-                            <MudTextField T="string" Label="Review Title" @bind-Value="review.Title" 
-                                             Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true"></MudTextField>
-                            <MudAutocomplete T="string" Label="Work" Dense="true" @bind-Value="workTitle" SearchFunc="@SearchWorks"
-                                             Variant="Variant.Outlined" OnBlur="SetWorkData" CoerceValue="true"/>
+                            <MudTextField T="string" Label="Review Title" @bind-Value="review.Title"
+                                      Variant="Variant.Outlined" Margin="Margin.Dense" Clearable="true"></MudTextField>
+                            <MudAutocomplete T="string" Label="Work" Dense="true" @bind-Value="review.Work.Title" SearchFunc="@SearchWorks"
+                                         Variant="Variant.Outlined" CoerceValue="true" />
                             <MudAutocomplete T="string" Label="Tags" OnAdornmentClick="AddTag" @bind-Value="tagTitle" SearchFunc="@SearchTags"
-                                             Variant="Variant.Outlined" AdornmentIcon="@Icons.Material.Filled.PlusOne" CoerceValue="true" />
-                            <MudItem xs="12" md="12">
+                                         Variant="Variant.Outlined" AdornmentIcon="@Icons.Material.Filled.PlusOne" CoerceValue="true" />
+                            <MudItem xs="12" md="12" Class="pa-4">
                                 <MudText Class="mb-n3" Typo="Typo.body2">
-                                    Selected tags: 
-                                    @foreach (var t in viewService.ReviewTags!)
+                                    Selected tags:
+                                    @foreach (var t in viewService.CurrentReviewTags)
                                     {
-                                        <MudChip Text="@(GetTagTitle(t.TagId))" OnClose="RemoveTag"></MudChip>
+                                        <MudChip Text="@t" OnClose="RemoveTag"></MudChip>
                                     }
                                 </MudText>
                             </MudItem>
-                            <br /> <br /> <br />
-                            <Editor @bind-Value="review.Text" />
-                            <UploadBlobsComponent @bind-ImageUrl="review.ImageUrl"/>
+
+                            <Editor ApiKey="@TINY_MCE_API_KEY" @bind-Value="review.Text" />
+                            <UploadBlobsComponent @bind-ImageUrl="review.ImageUrl" />
                             <MudRating @bind-SelectedValue="review.Rating" MaxValue="10" />
                             <MudButton OnClick="PublishReviewAndRedirectToHome" @onkeydown="@Enter" Variant="Variant.Filled">Publish</MudButton>
-                        </MudForm>   
+                        </MudForm>
                     </MudPaper>
                 </MudItem>
             </MudGrid>
@@ -59,35 +60,26 @@ else
 
 @code {
     const string DEFAULT_IMAGE = "https://placehold.co/600x400/EEE/31343C?font=lora&text=Oops...+Image+is+missing";
-
+    const string TINY_MCE_API_KEY = "y653vqdmnvv7jlxmracslt36tvgb0ebdzw4mif90q9twv3n9";
     [Parameter]
-    public int ReviewId { get; set; }
+    public string? UserId { get; set; }
+    [Parameter]
+    public int? ReviewId { get; set; }
     private Review review = new();
-    private string workTitle = "";
-    private string tagTitle = default!;
+    private string tagTitle = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
         await viewService.GetCategoriesAsync();
-        if (ReviewId != 0)
-        {
-            review = await reviewService.GetReviewByIdAsync(ReviewId);
-            workTitle = review.Work.Title;
-        }
-        else
-        {
-            review.Work = new Work();
-            review.Work.Category = new Category();
-        }
-        await viewService.GetCurrentReviewTagsAsync(ReviewId);
+        review.Work = new Work();
+        review.Work.Category = new Category();
     }
 
     private async Task PublishReviewAndRedirectToHome()
     {
         await SetReviewData();
-        if (ReviewId == 0)
-            await reviewService.AddReview(review);
-        else await reviewService.EditReview(review);
+        await reviewService.AddReview(review);
+        await AddTagsToReview();
         await reviewService.CalculateAuthorRating(review.Work.Title);
         navigationManager.NavigateTo("/");
     }
@@ -95,57 +87,63 @@ else
     private async Task SetReviewData()
     {
         await SetWorkData();
-        if (ReviewId == 0)
-            review.PostedOn = DateTime.Now;
-        else
-            review.EditedOn = DateTime.Now;
-        review.UserId = await userService.GetCurrentUserId();
+        review.PostedOn = DateTime.Now;
+        if (UserId == null)
+            review.UserId = await userService.GetCurrentUserId();
+        else review.UserId = UserId;
         if (review.ImageUrl is null)
             review.ImageUrl = DEFAULT_IMAGE;
     }
 
-    public void SetCategory(Category value)
-    {
-        review.Work.Category = value;
-    }
-
     private async Task SetWorkData()
     {
-        //review.Work = await reviewService.GetWorkByTitle(workTitle);
         if (!await reviewService.FindWorkByTitle(review.Work.Title))
         {
-            //review.Work.CategoryId = review.Work.Category.Id;
             await reviewService.AddWork(review.Work);
         }
         else review.Work = await reviewService.GetWorkByTitle(review.Work.Title);
     }
 
-    private async Task AddTag()
+    public void SetCategory(Category value)
     {
-        Tag t;
-        if (tagTitle is not null)
+        review.Work = new();
+        review.Work.Category = value;
+    }
+
+    private void AddTag()
+    {
+        if (!string.IsNullOrWhiteSpace(tagTitle))
         {
-            if (!await reviewService.FindTagByTitle(tagTitle))
-            {
-                t = new Tag { Title = tagTitle };
-                await reviewService.AddTag(t);
-            }
-            else 
-            {
-                t = await reviewService.GetTagByTitle(tagTitle);
-            }
-            await viewService.AddTagToReview(new ReviewTag
-                {
-                    TagId = t.Id,
-                    ReviewId = ReviewId
-                });
+            viewService.AddTagToView(tagTitle);
             tagTitle = "";
         }
     }
 
-    private async Task RemoveTag(MudChip chip)
+    private void RemoveTag(MudChip chip)
     {
-        await viewService.RemoveTagFromReviewAsync(review.Id, chip.Text);
+        viewService.RemoveTagFromView(chip.Text);
+    }
+
+    private async Task AddTagsToReview()
+    {
+        Tag t;
+        foreach (var tag in viewService.CurrentReviewTags)
+        {
+            if (await reviewService.FindTagByTitle(tag))
+            {
+                t = await reviewService.GetTagByTitle(tag);
+            }
+            else
+            {
+                t = new Tag { Title = tagTitle };
+                await reviewService.AddTag(t);
+            }
+            await reviewService.AddTagToReview(new ReviewTag
+                {
+                    ReviewId = review.Id,
+                    TagId = t.Id
+                });
+        }
     }
 
     private string GetTagTitle(int tagId)
@@ -153,9 +151,6 @@ else
         var t = reviewService.GetTagById(tagId);
         return t.Title;
     }
-
-    private bool IsEditing()
-        => ReviewId != 0;
 
     private async Task<IEnumerable<string>> SearchTags(string value)
     {

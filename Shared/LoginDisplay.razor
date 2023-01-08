@@ -8,9 +8,7 @@
         </form>
     </Authorized>
     <NotAuthorized>
-        <div>
-            <MudLink Color="Color.Inherit" Href="/Login" Class="mr-4">@Localizer["Login"]</MudLink>
-            <MudLink Color="Color.Inherit" Href="Identity/Account/Register">@Localizer["Register"]</MudLink>
-        </div>
+        <MudLink Color="Color.Inherit" Href="/Login" Class="mr-4">@Localizer["Login"]</MudLink>
+        <MudLink Color="Color.Inherit" Href="Identity/Account/Register">@Localizer["Register"]</MudLink>
     </NotAuthorized>
 </AuthorizeView>

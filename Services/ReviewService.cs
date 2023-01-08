@@ -91,7 +91,7 @@ namespace CourseProject.Services
         public async Task AddWork(Work work)
         {
             using var ctx = _dbContextFactory.CreateDbContext();
-            await ctx.Works.AddAsync(work);
+            ctx.Works.Attach(work);
             await ctx.SaveChangesAsync();
         }
 
@@ -116,7 +116,7 @@ namespace CourseProject.Services
             using var ctx = _dbContextFactory.CreateDbContext();
             var w = await GetWorkByTitle(workTitle);
             w.OverallAuthorRating = await ctx.Reviews
-                .Where(r => r.Title == workTitle)
+                .Where(r => r.Work.Title == workTitle)
                 .AverageAsync(r => r.Rating);
             ctx.Update(w);
             await ctx.SaveChangesAsync();
@@ -213,14 +213,6 @@ namespace CourseProject.Services
                 .OrderBy(w => w.Title)
                 .ToListAsync();
         }
-        
-        //Consider delete
-        public async Task<Category> GetCategoryById(int catId)
-        {
-            using var ctx = _dbContextFactory.CreateDbContext();
-            return await ctx.Categories
-                .SingleAsync(w => w.Id == catId);
-        }
 
         public async Task<List<Comment>> GetReviewComments(int reviewId)
         {
@@ -244,6 +236,7 @@ namespace CourseProject.Services
             using var ctx = _dbContextFactory.CreateDbContext();
             return await ctx.ReviewTags
                 .Where(r => r.ReviewId == reviewId)
+                .Include(t => t.Tag)
                 .ToListAsync();
         }
 
@@ -255,13 +248,14 @@ namespace CourseProject.Services
             await ctx.SaveChangesAsync();
         }
 
-        public async Task RemoveTagFromReview(int reviewId, string tagTitle)
+        public async Task RemoveTagsFromReview(int reviewId)
         {
             using var ctx = _dbContextFactory.CreateDbContext();
-            var t = await ctx.ReviewTags
+            var tags = await ctx.ReviewTags
                 .Where(w => w.ReviewId == reviewId)
-                .SingleAsync(w => w.Tag.Title == tagTitle);
-            ctx.ReviewTags.Remove(t!);
+                .ToListAsync();
+            foreach (var t in tags)
+                ctx.ReviewTags.Remove(t!);
             await ctx.SaveChangesAsync();
         }
     }

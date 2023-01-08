@@ -2,31 +2,39 @@
 @page "/Search/{searchedText}"
 @inject IStringLocalizer<App> Localizer
 
-@if(reviews.Count < 1)
+@if(reviews is null)
 {
-    <MudText>@Localizer["No results found!"]</MudText>
+    <MudText Class="pa-4">@Localizer["Loading..."]</MudText>
+}
+else if (reviews.Count < 1)
+{
+    <MudText Class="pa-4">@Localizer["No results found!"]</MudText>
 }
 else
 {
-    <MudTable Items="reviews">
-        <RowTemplate>
-            <MudTd><MudLink Href="@($"/Review/{context.Id}")">@context.Title</MudLink></MudTd>
-            <MudTd><MudMarkdown Value="@GetTextPart(context.Text)" /></MudTd>
-        </RowTemplate>
-    </MudTable>
+    <MudItem xs="12">
+        <MudTable Items="reviews">
+            <RowTemplate>
+                <MudTd><MudLink Href="@($"/Review/{context.Id}")">@context.Title</MudLink></MudTd>
+                <MudTd><MudMarkdown Value="@GetTextPart(context.Text)" /></MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudItem>
 }
 
 @code {
     [Parameter]
     public string? searchedText { get; set; }
-    private List<Review> reviews = new();
+    private List<Review> reviews = default!;
+    private int textPart = 50;
 
     protected override async Task OnParametersSetAsync()
-        => reviews = await SetReviews();
-
-    private async Task<List<Review>> SetReviews()
-        => await searchService.Search(searchedText!);
+        => reviews = await searchService.Search(searchedText!);
 
     private string GetTextPart(string text)
-        => $"{text.Substring(0, 50)}...";
+    {
+        if (text.Length >= textPart)
+            return $"{text.Substring(0, textPart)}...";
+        else return text;
+    }
 }

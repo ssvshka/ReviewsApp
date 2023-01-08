@@ -1,0 +1,51 @@
+﻿@inject TagCloudService tagCloudService
+@using KnowledgePicker.WordCloud;
+@using KnowledgePicker.WordCloud.Coloring;
+@using KnowledgePicker.WordCloud.Drawing;
+@using KnowledgePicker.WordCloud.Layouts;
+@using KnowledgePicker.WordCloud.Primitives;
+@using KnowledgePicker.WordCloud.Sizers;
+@using SkiaSharp;
+
+@if (wordCloud is not null && items is not null)
+{
+    <svg viewBox="0,0,@wordCloud.Width,@wordCloud.Height">
+    @foreach (var (item, fontSize) in items)
+    {
+        var x = (item.Location.X - item.Measured.Left).ToString(format);
+        var y = (item.Location.Y - item.Measured.Top).ToString(format);
+        var fs = fontSize.ToString(format);
+        <text>
+            <text x="@x" y="@y" font-size="@fs">
+                <MudLink Href="@($"/Search/{item.Entry.Word}")">@($"{item.Entry.Word}({item.Entry.Count})")</MudLink>
+            </text>
+        </text>
+    }
+    </svg>
+}
+
+@code {
+    private WordCloudInput wordCloud = default!;
+    private IEnumerable<(LayoutItem Item, double FontSize)> items = default!;
+    private const string format = "0.##";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var wordEntries = await tagCloudService.CollectWordFrequencies();
+        var k = 1;
+        wordCloud = new WordCloudInput(wordEntries)
+            {
+                Width = 512 * k,
+                Height = 128 * k,
+                MinFontSize = 16 * k,
+                MaxFontSize = 32 * k,
+                ItemMargin = 0.8
+            };
+        var sizer = new LogSizer(wordCloud);
+        using var engine = new SkGraphicEngine(sizer, wordCloud);
+        var layout = new SpiralLayout(wordCloud);
+        var colorizer = new RandomColorizer();
+        var wcg = new WordCloudGenerator<SKBitmap>(wordCloud, engine, layout, colorizer);
+        items = wcg.Arrange();
+    }
+}

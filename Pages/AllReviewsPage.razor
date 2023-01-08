@@ -4,23 +4,23 @@
 @inject UserService userService
 @inject IStringLocalizer<App> Localizer
 
-@if (viewService.Reviews is null)
+@if (viewService.AllReviews is null)
 {
     <text>@Localizer["Loading"]...</text>
 }
 else
 {
-    <MudTabs Elevation="2" ApplyEffectsToContainer="true" PanelClass="pa-6">
+    <MudTabs Elevation="2" ApplyEffectsToContainer="true">
         <MudTabPanel OnClick="GetReviews" Text="@Localizer["New"]" />
-        <MudTabPanel OnClick="viewService.OrderReviewsByRating" Text="@Localizer["Most Rated"]" />
+        <MudTabPanel OnClick="viewService.OrderReviewsByRating" Text="@Localizer["Most rated"]" />
+        <MudTabPanel Text="@Localizer["Tag cloud"]">
+            <TagCloudComponent />
+        </MudTabPanel>
     </MudTabs>
     
-    @foreach (var r in viewService.Reviews!)
+    @foreach (var r in viewService.AllReviews!)
     {
-        if (r.Id != 35)
-        {
-            <ReviewCard Review="@r" CurrentUserId="@CurrentUserId"/>    
-        }
+        <ReviewCardComponent Review="@r" CurrentUserId="@CurrentUserId"/>    
     }
 }
 

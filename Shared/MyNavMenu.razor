@@ -2,7 +2,13 @@
 
 <MudNavMenu>
     <MudNavLink Href="/" Match="NavLinkMatch.All">@Localizer["Home"]</MudNavLink>
+    <AuthorizeView Roles="Admin">
+        <MudNavLink Href="/Admin" Match="NavLinkMatch.Prefix">@Localizer["Admin page"]</MudNavLink>    
+    </AuthorizeView>
     <MudNavLink Href="/AllReviews"  Match="NavLinkMatch.Prefix">@Localizer["All reviews"]</MudNavLink>
-    <MudNavLink Href="/MyReviews" Match="NavLinkMatch.Prefix">@Localizer["My reviews"]</MudNavLink>
-    <MudNavLink Href="/ReviewForm"  Match="NavLinkMatch.Prefix">@Localizer["Write a review"]</MudNavLink>
+    <AuthorizeView>
+        <MudNavLink Href="/MyReviews" Match="NavLinkMatch.Prefix">@Localizer["My reviews"]</MudNavLink>
+        <MudNavLink Href="/WriteReview" Match="NavLinkMatch.Prefix">@Localizer["Write a review"]</MudNavLink>
+    </AuthorizeView>
+    <SearchComponent DivClass="pa-4 d-flex d-sm-none" />
 </MudNavMenu>
