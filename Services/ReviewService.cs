@@ -110,6 +110,22 @@ namespace CourseProject.Services
                 .SingleAsync();
         }
 
+        public async Task<List<Review>> GetSameWorkReviews(int workId, int reviewId)
+        {
+            using var ctx = _dbContextFactory.CreateDbContext();
+            return await ctx.Reviews
+                .Include(r => r.Work)
+                .ThenInclude(w => w.Category)
+                .Include(r => r.User)
+                .Include(r => r.Comments)
+                .Include(r => r.TagsLink)
+                .ThenInclude(t => t.Tag)
+                .OrderByDescending(r => r.PostedOn)
+                .Where(r => r.WorkId == workId)
+                .Where(r => r.Id != reviewId)
+                .ToListAsync();
+        }
+
         public async Task CalculateAuthorRating(string workTitle)
         {
             using var ctx = _dbContextFactory.CreateDbContext();

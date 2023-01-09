@@ -258,6 +258,9 @@
   <data name="You have to be an admin to see this page" xml:space="preserve">
     <value>Вы должны быть администратором, чтобы увидеть содержимое этой страницы</value>
   </data>
+  <data name="You may also like these reviews" xml:space="preserve">
+    <value>Вам также могут понравиться эти обзоры</value>
+  </data>
   <data name="Your reviews" xml:space="preserve">
     <value>Ваши обзоры</value>
   </data>

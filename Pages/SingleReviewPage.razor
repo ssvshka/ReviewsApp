@@ -46,6 +46,12 @@ else
             <CommentViewComp Comment="@c"></CommentViewComp>
         }
     }
+
+    <MudText Class="py-2">@Localizer["You may also like these reviews"]:</MudText>
+    @foreach (var r in sameWorkReviews)
+    {
+        <ReviewCardComponent Review="r" />
+    }
 }
 
 @code {
@@ -54,12 +60,14 @@ else
     public int ReviewId { get; set; }
     private Comment comment = default!;
     private Review review = default!;
+    private List<Review> sameWorkReviews = new();
 
     protected async override Task OnInitializedAsync()
     {
         review = await reviewService.GetReviewByIdAsync(ReviewId);
         await viewService.GetCommentsAsync(ReviewId);
         comment = new Comment();
+        sameWorkReviews = await reviewService.GetSameWorkReviews(review.WorkId, review.Id);
         await OpenHubConnection();
     }
 
