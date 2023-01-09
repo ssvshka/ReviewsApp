@@ -108,11 +108,14 @@ namespace CourseProject.Services
             return await ctx.Roles.Select(r => r.Name).ToListAsync();
         }
 
-        public async Task BlockUser(User user)
+        public async Task BlockUser(string userId)
         {
-            //var lockoutEndDate = new DateTime(2999, 01, 01);
-            await _userManager.SetLockoutEnabledAsync(user, true);
-            //await UserManager.SetLockoutEndDateAsync(user, lockoutEndDate);
+            using var ctx = _dbContextFactory.CreateDbContext();
+            var user = await ctx.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
+            user!.LockoutEnd = new DateTime(2999, 01, 01);
+            user!.SecurityStamp = Guid.NewGuid().ToString();
+            ctx.Update(user);
+            await ctx.SaveChangesAsync();
         }
 
         public async Task UnblockUser(User user)
@@ -120,14 +123,10 @@ namespace CourseProject.Services
             await _userManager.SetLockoutEnabledAsync(user, false);
         }
 
-        public async Task<bool> IsUserBlocked(User user)
-        {
-            return await _userManager.IsLockedOutAsync(user);
-        }
-
         public async Task DeleteUser(User user)
         {
             await _userManager.DeleteAsync(user);
+            await _userManager.UpdateSecurityStampAsync(user);
         }
 
         private static async Task<Like> GetLike(string userId, int reviewId, ApplicationDbContext ctx)

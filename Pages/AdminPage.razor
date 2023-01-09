@@ -5,20 +5,21 @@
 @inject UserService userService
 @inject IStringLocalizer<App> Localizer
 
-<AuthorizeView>
+<AuthorizeView Roles="Admin">
     <Authorized>
         <MudTable Items="@viewService.Users">
             <HeaderContent>
                 <MudTh>Id</MudTh>
                 <MudTh>@Localizer["Email"]</MudTh>
-                <MudTh Style="text-align: start">@Localizer["Block/unblock"]</MudTh>
+                <MudTh Style="text-align: start">@Localizer["Block"]</MudTh>
                 <MudTh Style="text-align: start">@Localizer["Role"]</MudTh>
                 <MudTh Style="text-align: start">@Localizer["Delete user"]</MudTh>
             </HeaderContent>
             <RowTemplate Context="ctx">
                 <MudTd DataLabel="Id"><MudLink Href='@($"/MyReviews/{ctx.Id}")'>@ctx.Id.Substring(0, 8)...</MudLink></MudTd>
                 <MudTd DataLabel="Email">@ctx.Email</MudTd>
-                <MudTd DataLabel="Block/unblock">
+                <MudTd DataLabel="Block">
+                    <MudButton OnClick="_ => BlockUser(ctx.Id)">Block User</MudButton>
                 </MudTd>
                 <MudTd DataLabel="Role">
                     <MudItem Style="width=50px">
@@ -31,7 +32,7 @@
                     </MudItem>
                 </MudTd>
                 <MudTd DataLabel="Delete user">
-                    <MudIconButton Icon="@Icons.Material.Filled.Delete"/>
+                    <MudIconButton OnClick="_ => DeleteUser(ctx)" Href="/Admin" Icon="@Icons.Material.Filled.Delete" />
                 </MudTd>
             </RowTemplate>
         </MudTable>
@@ -63,6 +64,16 @@
             await userService.SetRole(userName, value);
             await userService.RemoveRole(userName, "Admin");
         }
+    }
+
+    private async Task DeleteUser(User user)
+    {
+        await viewService.DeleteUserAsync(user);
+    }
+
+    private async Task BlockUser(string userId)
+    {
+        await userService.BlockUser(userId);
     }
 
     private void OnListChanged(object? sender, EventArgs e)

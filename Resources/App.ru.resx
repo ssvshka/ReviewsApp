@@ -138,6 +138,9 @@
   <data name="Average user rating" xml:space="preserve">
     <value>Средний рейтинг пользователей</value>
   </data>
+  <data name="Block" xml:space="preserve">
+    <value>Заблокировать</value>
+  </data>
   <data name="Book" xml:space="preserve">
     <value>Книга</value>
   </data>
@@ -149,6 +152,9 @@
   </data>
   <data name="Delete" xml:space="preserve">
     <value>Удалить</value>
+  </data>
+  <data name="Delete user" xml:space="preserve">
+    <value>Удалить пользователя</value>
   </data>
   <data name="Drag and drop files here or click" xml:space="preserve">
     <value>Перетащите файлы или нажмите</value>
@@ -218,6 +224,9 @@
   </data>
   <data name="Reviews of" xml:space="preserve">
     <value>Обзоры пользователя</value>
+  </data>
+  <data name="Role" xml:space="preserve">
+    <value>Роль</value>
   </data>
   <data name="Search" xml:space="preserve">
     <value>Поиск</value>

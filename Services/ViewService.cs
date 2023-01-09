@@ -49,6 +49,12 @@ namespace CourseProject.Services
             NotifyListChanged(Users, EventArgs.Empty);
         }
 
+        public async Task DeleteUserAsync(User user)
+        {
+            await _userService.DeleteUser(user);
+            await GetUsersAsync();
+        }
+
         public async Task DeleteReviewAsync(Review review, string userId)
         {
             await _reviewService.DeleteReview(review);

@@ -26,7 +26,7 @@ var localizationOptions = new RequestLocalizationOptions()
 builder.Services.AddDbContextFactory<ApplicationDbContext>(options => options.UseSqlServer(cs));
 builder.Services.AddScoped<ReviewService>();
 builder.Services.AddScoped<ViewService>();
-builder.Services.AddScoped<UserService>();
+builder.Services.AddTransient<UserService>();
 builder.Services.AddScoped<AzureStorageHelper>();   
 builder.Services.AddScoped<SearchService>();
 builder.Services.AddScoped<TagCloudService>();
