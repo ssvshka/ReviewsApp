@@ -2,6 +2,7 @@
 @page "/WriteReview/{userId}"
 @page "/WriteReview/{userId}/{reviewId:int}"
 @using TinyMCE.Blazor
+@inject IStringLocalizer<App> Localizer
 @inject ReviewService reviewService
 @inject ViewService viewService
 @inject UserService userService
@@ -9,7 +10,7 @@
 
 @if (review is null || review.Work is null || review.Work.Category is null)
 {
-    <text>Loading...</text>
+    <text>@Localizer["Loading"]...</text>
 }
 else
 {
@@ -34,7 +35,7 @@ else
                                       Variant="Variant.Outlined" AdornmentIcon="@Icons.Material.Filled.PlusOne" CoerceValue="true" />
                             <MudItem xs="12" md="12" Class="pa-4">
                                 <MudText Class="mb-n3" Typo="Typo.body2">
-                                    Selected tags:
+                                    @Localizer["Selected tags"]:
                                     @foreach (var t in viewService.CurrentReviewTags)
                                     {
                                         <MudChip Text="@t" OnClose="RemoveTag"></MudChip>

@@ -52,7 +52,7 @@ namespace CourseProject.Services
         public async Task DeleteReviewAsync(Review review, string userId)
         {
             await _reviewService.DeleteReview(review);
-            NotifyListChanged(UserReviews!, EventArgs.Empty);
+            await GetUserReviewsAsync(userId);
         }
 
         public async Task GetCommentsAsync(int reviewId)

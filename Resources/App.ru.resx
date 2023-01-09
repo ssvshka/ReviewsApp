@@ -222,6 +222,9 @@
   <data name="Search" xml:space="preserve">
     <value>Поиск</value>
   </data>
+  <data name="Selected tags" xml:space="preserve">
+    <value>Выбранные теги</value>
+  </data>
   <data name="Tag cloud" xml:space="preserve">
     <value>Облако тегов</value>
   </data>

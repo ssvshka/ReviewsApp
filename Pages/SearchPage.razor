@@ -12,14 +12,15 @@ else if (reviews.Count < 1)
 }
 else
 {
-    <MudItem xs="12">
-        <MudTable Items="reviews">
-            <RowTemplate>
-                <MudTd><MudLink Href="@($"/Review/{context.Id}")">@context.Title</MudLink></MudTd>
-                <MudTd><MudMarkdown Value="@GetTextPart(context.Text)" /></MudTd>
-            </RowTemplate>
-        </MudTable>
-    </MudItem>
+    @foreach (var r in reviews)
+    {
+        <MudCard>
+            <MudCardContent>
+                <MudLink Href="@($"/Review/{r.Id}")">@r.Title</MudLink>
+                <MudMarkdown Value="@GetTextPart(r.Text)" />
+            </MudCardContent>
+        </MudCard>
+    }
 }
 
 @code {

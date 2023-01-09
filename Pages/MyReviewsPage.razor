@@ -72,7 +72,7 @@ else
 
     private async Task DeleteReview(Review review)
     {
-        await viewService.DeleteReviewAsync(review, userId);
+        await viewService.DeleteReviewAsync(review, user.Id);
     }
 
     private bool FilterFunc(Review review)
