@@ -95,11 +95,14 @@ namespace CourseProject.Services
             return await _userManager.IsInRoleAsync(user, role);
         }
 
-        public async Task<string> GetUserRole(string userName)
+        public string GetUserRole(string userId)
         {
-            var user = await _userManager.FindByNameAsync(userName);
-            var roles = await _userManager.GetRolesAsync(user!);
-            return roles.FirstOrDefault()!;
+            using var ctx = _dbContextFactory.CreateDbContext();
+            var roleId = ctx.UserRoles.Where(u => u.UserId == userId).Select(r => r.RoleId).FirstOrDefault();
+            var role = ctx.Roles.Where(r => r.Id == roleId).FirstOrDefault();
+            if (role != null)
+                return role.Name!;
+            return "";
         }
 
         public async Task<List<string>> GetRoles()

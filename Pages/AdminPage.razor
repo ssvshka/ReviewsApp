@@ -23,7 +23,7 @@
                 </MudTd>
                 <MudTd DataLabel="Role">
                     <MudItem Style="width=50px">
-                        <MudSelect T="string" Label="Role" ValueChanged="v => SetRole(ctx.UserName!, v)">
+                        <MudSelect T="string" Label="Role" Value="userService.GetUserRole(ctx.Id)" ValueChanged="v => SetRole(ctx.UserName!, v)">
                             @foreach (var r in roles)
                             {
                                 <MudSelectItem Value="r"></MudSelectItem>
